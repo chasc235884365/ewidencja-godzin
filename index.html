@@ -1,9 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ewidencja godzin pracy</title>
+<meta name="theme-color" content="#1B2430">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ewidencja">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAGN0lEQVR4nO3dP44cRRiG8TLiCGSkyDEWckrkiIPsCSz5DEg+wR6EyBEpQuQ+A4cgKGk8mukZquurP+9b9fwiQNjT3fX0Vz276/GbH3/6OQG1vpt9APBGQAghIIQQEEIICCEEhBACQggBIYSAEEJACCEghBAQQggIIQSEkO9nH0BKKf3w26+zD8HSv3/8OfsQ0ptZPw9ENM1N6Wl0QHQzwMiSxgVEOoONyWhEQKQzUe+M+gZEOgq6NtQxIOqR0imjXl8Hoh41nVak/QQiHXFtR1HjCUQ9+tquUcuAqMdFw5VqFhD1eGm1Xm0Coh5HTVaN78YjpEFAjB9f8bWLBkQ97oIrGAqIetYQWUeegRBSHxDjZyXVq8kEQkhlQIyf9dStKRMIITUBMX5WVbGyTCCEEBBCTgfE/rW2s+vLBEIIASGEgBBy7ofq134A+uvz74X/5/uPn7oeyXTlP3gv8ekcs5QX8/wXLt/TE9sFVB1N4e+5W0y7BNSjm+cvtElJ6wc0LJ3D110+o5UDOptO+WKX/87LZ7Tmu7DCBW61roNfboDyd2GrBVSylv0Wcu6rN7RpQM/Xb+TK6RxJne0C0lwwzaMqsVdAT9ZJYZHED+/QRgE9Wh61tXE5zmyLgLyWJHM55vKAXL8b77ISNx4d3qyvdsZZBmRaT7ZYQ35b2OGFtkjnhvKJLLuFKV/0sw4P224OOQW0Uj3ZAg3ZbGEj63l9++Xwv798/dDj5QRvjGW3sGvWs+ea9Yl4BHR/j1pf9Hv3p+OykRkEtHw9mWlD6gFtUk/m2JB6QBAnHdBW4yezG0K6AW1YT+bVkG5ANzapJzM6WdGAlO+5KWQviGhAN4zuyFZcTlkxINm7bS7Ny6IY0A2Xe7E5ixOXC0jzPhMheHHkArphcRf2o3/6WgEJ3mFq1C6RVkA39O+/AcQvgnRA0CcUkNpwliV1oYQCuiE+ukdSvhS6AcECASFEJSA+OPe5mwui8xikEhBMERBCCAghBIQQiYB4gi6h+RwtERB8ERBCVv6rDoLevfx9+ed/Xn+ZeCTKmEDHruu5/1dcENCBw1xo6BBb2AmXD57q9ElTjphANV7ffnn0KWa7YQLVYyAlJtChw69kPnkjtvNAIqBjNw2VvI3PGe1WElvYQ+8/fqqrIf+qTfY1AnrmEkFFSZs8IbGFFXn5+qG6g7X3NZUPGvf6hnwkiOoQR16iLT5ofKLIQFoMz0D1Kp6Q1suOCdTAzgOJCdRM5C2bL5UJpPnzmnV6DCTZNxlMoF7uB9KS25zKBFrY2k9IugFZ72L3Ig0pXwqhgHT2dXFSF0ooIDiSDkh5dA8jfhG0ApIazprULpFWQPfE77/e9E9fLiC1O0yK4MWRC+ie/l3YicWJKwYkeJ8p0LwsigHds7gX23I5ZdGANO+2iWQviGhA91zuyCaMTlY3IK+/vLghr7+uWjegtGVDXvUk8YCgTz2grYaQ3fhJ+gGlbRpyrCdZBJQ2aMi0nuQS0KFlGrI+EZuADu9I60ufHZ6Cy/hJRgGlFRtyryd5BZTWamiBepLOp3Oc8qgYl6uvf/yLfzrHowttMYr06znFMqBk29Bi9STTLeyay5K4HGdWvoXZB5SeTh2F5RE/vEN7BZT+b+eatU6aR1Viu4AynQXTOZI6mwaUyh6i+63f3FdvaN+AssL3Yq3WcvDLDbB7QNnZt/TlC9zvdxZBQN/M/cqQXTpZeUDrf8RdXsLxGZmmc9b6AWWX5exd0ibdXOwS0MX1AreKabdorm0X0LXqzxbeuZgb5x6ik+dzNE4pf4JOvt+NhwgCQggBIYSAEHI6oFNPWLBzdn2ZQAghIHxTsb3UBMQuhgsmEEIqA2IIraduTZlACKkPiCG0kurVDE0gGlpDZB3ZwhASDYgh5C64gg0mEA35iq8dW9i+mtz5bQJiCNlptWTNJhANGWm4WC23MBqy0HaZGj8D0ZC45gt0+k9lFOIPbwjqcXv3ehfGKFLTaUV6TaCMOaSg683cN6CMjCbqvRWMCCgjo8HGPEWMCygjo94GP32ODuiCkpqb8sZlWkDXiKmOwltdiYDgi+/GI4SAEEJACCEghBAQQggIIQSEEAJCCAEhhIAQQkAIISCEEBBC/gMb34GhzkaYMQAAAABJRU5ErkJggg==">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAGN0lEQVR4nO3dP44cRRiG8TLiCGSkyDEWckrkiIPsCSz5DEg+wR6EyBEpQuQ+A4cgKGk8mukZquurP+9b9fwiQNjT3fX0Vz276/GbH3/6OQG1vpt9APBGQAghIIQQEEIICCEEhBACQggBIYSAEEJACCEghBAQQggIIQSEkO9nH0BKKf3w26+zD8HSv3/8OfsQ0ptZPw9ENM1N6Wl0QHQzwMiSxgVEOoONyWhEQKQzUe+M+gZEOgq6NtQxIOqR0imjXl8Hoh41nVak/QQiHXFtR1HjCUQ9+tquUcuAqMdFw5VqFhD1eGm1Xm0Coh5HTVaN78YjpEFAjB9f8bWLBkQ97oIrGAqIetYQWUeegRBSHxDjZyXVq8kEQkhlQIyf9dStKRMIITUBMX5WVbGyTCCEEBBCTgfE/rW2s+vLBEIIASGEgBBy7ofq134A+uvz74X/5/uPn7oeyXTlP3gv8ekcs5QX8/wXLt/TE9sFVB1N4e+5W0y7BNSjm+cvtElJ6wc0LJ3D110+o5UDOptO+WKX/87LZ7Tmu7DCBW61roNfboDyd2GrBVSylv0Wcu6rN7RpQM/Xb+TK6RxJne0C0lwwzaMqsVdAT9ZJYZHED+/QRgE9Wh61tXE5zmyLgLyWJHM55vKAXL8b77ISNx4d3qyvdsZZBmRaT7ZYQ35b2OGFtkjnhvKJLLuFKV/0sw4P224OOQW0Uj3ZAg3ZbGEj63l9++Xwv798/dDj5QRvjGW3sGvWs+ea9Yl4BHR/j1pf9Hv3p+OykRkEtHw9mWlD6gFtUk/m2JB6QBAnHdBW4yezG0K6AW1YT+bVkG5ANzapJzM6WdGAlO+5KWQviGhAN4zuyFZcTlkxINm7bS7Ny6IY0A2Xe7E5ixOXC0jzPhMheHHkArphcRf2o3/6WgEJ3mFq1C6RVkA39O+/AcQvgnRA0CcUkNpwliV1oYQCuiE+ukdSvhS6AcECASFEJSA+OPe5mwui8xikEhBMERBCCAghBIQQiYB4gi6h+RwtERB8ERBCVv6rDoLevfx9+ed/Xn+ZeCTKmEDHruu5/1dcENCBw1xo6BBb2AmXD57q9ElTjphANV7ffnn0KWa7YQLVYyAlJtChw69kPnkjtvNAIqBjNw2VvI3PGe1WElvYQ+8/fqqrIf+qTfY1AnrmEkFFSZs8IbGFFXn5+qG6g7X3NZUPGvf6hnwkiOoQR16iLT5ofKLIQFoMz0D1Kp6Q1suOCdTAzgOJCdRM5C2bL5UJpPnzmnV6DCTZNxlMoF7uB9KS25zKBFrY2k9IugFZ72L3Ig0pXwqhgHT2dXFSF0ooIDiSDkh5dA8jfhG0ApIazprULpFWQPfE77/e9E9fLiC1O0yK4MWRC+ie/l3YicWJKwYkeJ8p0LwsigHds7gX23I5ZdGANO+2iWQviGhA91zuyCaMTlY3IK+/vLghr7+uWjegtGVDXvUk8YCgTz2grYaQ3fhJ+gGlbRpyrCdZBJQ2aMi0nuQS0KFlGrI+EZuADu9I60ufHZ6Cy/hJRgGlFRtyryd5BZTWamiBepLOp3Oc8qgYl6uvf/yLfzrHowttMYr06znFMqBk29Bi9STTLeyay5K4HGdWvoXZB5SeTh2F5RE/vEN7BZT+b+eatU6aR1Viu4AynQXTOZI6mwaUyh6i+63f3FdvaN+AssL3Yq3WcvDLDbB7QNnZt/TlC9zvdxZBQN/M/cqQXTpZeUDrf8RdXsLxGZmmc9b6AWWX5exd0ibdXOwS0MX1AreKabdorm0X0LXqzxbeuZgb5x6ik+dzNE4pf4JOvt+NhwgCQggBIYSAEHI6oFNPWLBzdn2ZQAghIHxTsb3UBMQuhgsmEEIqA2IIraduTZlACKkPiCG0kurVDE0gGlpDZB3ZwhASDYgh5C64gg0mEA35iq8dW9i+mtz5bQJiCNlptWTNJhANGWm4WC23MBqy0HaZGj8D0ZC45gt0+k9lFOIPbwjqcXv3ehfGKFLTaUV6TaCMOaSg683cN6CMjCbqvRWMCCgjo8HGPEWMCygjo94GP32ODuiCkpqb8sZlWkDXiKmOwltdiYDgi+/GI4SAEEJACCEghBAQQggIIQSEEAJCCAEhhIAQQkAIISCEEBBC/gMb34GhzkaYMQAAAABJRU5ErkJggg==">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -92,7 +100,12 @@
   .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:5px 10px;font-size:11.5px;}
   .btn-danger:hover{background:var(--red);color:#fff;}
 
-  table{width:100%;border-collapse:collapse;font-size:13px;}
+  #tableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .scroll-hint{display:none;font-size:11px;color:var(--muted);margin:-6px 0 8px;}
+  @media (max-width:680px){
+    .scroll-hint{display:block;}
+  }
+  table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px;}
   thead th{
     text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
     text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
@@ -226,6 +239,7 @@
         <button class="btn-ghost" id="exportBtn">Eksport CSV</button>
       </div>
     </div>
+    <p class="scroll-hint">← przewiń tabelę w bok, żeby zobaczyć wszystkie kolumny →</p>
     <div id="tableWrap"></div>
   </div>
 
