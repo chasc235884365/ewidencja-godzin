@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ewidencja godzin pracy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-soft:#2C3746;
+    --paper:#FAFAF7;
+    --paper-dim:#F1EFE8;
+    --line:#DCD6C8;
+    --teal:#2F6E6E;
+    --teal-dark:#1F4C4C;
+    --amber:#C9942A;
+    --amber-dark:#8F6A17;
+    --red:#B3413A;
+    --muted:#767065;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 20px 60px;}
+
+  /* header / signature */
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:22px;flex-wrap:wrap;gap:14px;
+  }
+  .brand-eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;
+    margin:0;letter-spacing:-0.01em;
+  }
+  .subtitle{color:#B9C2C9;font-size:13.5px;margin-top:6px;max-width:480px;}
+
+  .ruler{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A94A0;
+    display:flex;align-items:center;gap:2px;
+  }
+
+  .card{
+    background:var(--paper);color:var(--ink);border-radius:var(--radius);
+    padding:20px 22px;margin-bottom:18px;
+    box-shadow:0 1px 0 rgba(0,0,0,.25);
+  }
+  .card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;
+    margin:0 0 14px;display:flex;align-items:center;gap:8px;
+    text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);
+  }
+  .card h2 .n{
+    font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:12px;
+    border:1px solid var(--teal);border-radius:4px;padding:1px 6px;
+  }
+
+  .grid{display:grid;gap:12px;}
+  .grid.settings{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .grid.entry{grid-template-columns:1.1fr .8fr .8fr .8fr 1.4fr auto;align-items:end;}
+
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  input[type=text], input[type=number], input[type=date], input[type=time], select{
+    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;
+    background:#fff;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .checkbox-row input{width:auto;}
+
+  button{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;
+    border:none;border-radius:7px;padding:10px 16px;cursor:pointer;
+    transition:transform .08s ease, opacity .15s ease;
+  }
+  button:active{transform:scale(.97);}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper-dim);}
+  .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:5px 10px;font-size:11.5px;}
+  .btn-danger:hover{background:var(--red);color:#fff;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    border-bottom:1px solid var(--line);padding:8px 8px;
+  }
+  tbody td{padding:10px 8px;border-bottom:1px solid var(--paper-dim);vertical-align:middle;}
+  tbody tr:hover{background:var(--paper-dim);}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 6px;border-radius:4px;
+    background:var(--paper-dim);color:var(--muted);
+  }
+  .tag.holiday{background:#F4E3D0;color:var(--amber-dark);}
+
+  /* signature: hour bar per row */
+  .hourbar{position:relative;width:100%;height:14px;background:var(--paper-dim);border-radius:4px;overflow:hidden;min-width:90px;}
+  .hourbar .seg{position:absolute;top:0;bottom:0;}
+  .hourbar .reg{background:var(--teal);}
+  .hourbar .ot{background:var(--amber);}
+
+  .empty{color:var(--muted);font-size:13px;padding:22px 4px;text-align:center;}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;}
+  .stat{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-dim);}
+  .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
+  .stat .value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-top:4px;color:var(--ink);}
+  .stat.pay .value{color:var(--teal-dark);}
+  .stat.ot .value{color:var(--amber-dark);}
+
+  .month-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-top:14px;border:1px solid var(--line);}
+  .month-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .month-select{display:flex;align-items:center;gap:8px;}
+  .month-select select{width:auto;min-width:150px;}
+
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  .footer-note{color:#7C858E;font-size:11.5px;text-align:center;margin-top:24px;}
+
+  @media (max-width:720px){
+    .grid.entry{grid-template-columns:1fr 1fr;}
+    .grid.entry > *:last-child{grid-column:span 2;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="brand-eyebrow">Karta czasu pracy — 001</p>
+      <h1>Ewidencja godzin</h1>
+      <p class="subtitle">Wpisuj zmiany, licz nadgodziny i wypłatę automatycznie.</p>
+    </div>
+    <div class="ruler" id="clockRuler"></div>
+  </header>
+
+  <div class="card">
+    <h2><span class="n">§1</span> Ustawienia umowy</h2>
+    <div class="grid settings">
+      <div>
+        <label for="workerName">Etykieta / imię</label>
+        <input type="text" id="workerName" placeholder="np. Mateusz">
+      </div>
+      <div>
+        <label for="contractType">Typ umowy</label>
+        <select id="contractType">
+          <option value="etat">Umowa o pracę (etat)</option>
+          <option value="inne">Zlecenie / dzieło / B2B</option>
+        </select>
+      </div>
+      <div>
+        <label for="rate">Stawka (zł/h)</label>
+        <input type="number" id="rate" step="0.01" min="0" placeholder="30.00">
+      </div>
+      <div id="thresholdWrap">
+        <label for="threshold">Próg dobowy (h)</label>
+        <input type="number" id="threshold" step="0.5" min="1" value="8">
+      </div>
+      <div id="otMultWrap">
+        <label for="otMult">Mnożnik nadgodzin</label>
+        <input type="number" id="otMult" step="0.05" min="1" value="1.5">
+      </div>
+      <div id="holMultWrap">
+        <label for="holMult">Mnożnik niedziela/święto</label>
+        <input type="number" id="holMult" step="0.05" min="1" value="2.0">
+      </div>
+    </div>
+    <p class="note">Wyliczenia nadgodzin są uproszczone (próg dobowy) i mają charakter orientacyjny — nie zastępują przepisów Kodeksu pracy ani umowy.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">§2</span> Dodaj wpis</h2>
+    <div class="grid entry">
+      <div>
+        <label for="eDate">Data</label>
+        <input type="date" id="eDate">
+      </div>
+      <div>
+        <label for="eFrom">Od</label>
+        <input type="time" id="eFrom">
+      </div>
+      <div>
+        <label for="eTo">Do</label>
+        <input type="time" id="eTo">
+      </div>
+      <div>
+        <label for="eBreak">Przerwa (min)</label>
+        <input type="number" id="eBreak" min="0" step="5" value="0">
+      </div>
+      <div>
+        <label for="eNote">Notatka</label>
+        <input type="text" id="eNote" placeholder="opcjonalnie">
+      </div>
+      <div>
+        <button class="btn-primary" id="addBtn" style="width:100%;">Dodaj wpis</button>
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="eHoliday">
+      <label for="eHoliday" style="margin:0;text-transform:none;font-weight:400;">To dzień wolny / niedziela / święto (wyższa stawka)</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <h2 style="margin:0;"><span class="n">§3</span> Wpisy</h2>
+      <div class="month-select">
+        <label style="margin:0;" for="monthFilter">Miesiąc</label>
+        <select id="monthFilter"></select>
+        <button class="btn-ghost" id="exportBtn">Eksport CSV</button>
+      </div>
+    </div>
+    <div id="tableWrap"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">§5</span> Kopia zapasowa</h2>
+    <p class="note" style="margin-top:0;">Dane są zapisane w tej przeglądarce (localStorage) — zostaną nawet po wyłączeniu komputera, ale nie przeniosą się same na inne urządzenie ani inną przeglądarkę. Zrób kopię zapasową, jeśli chcesz je przenieść albo zabezpieczyć.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-ghost" id="backupExportBtn">Pobierz kopię (.json)</button>
+      <button class="btn-ghost" id="backupImportBtn">Wczytaj kopię (.json)</button>
+      <input type="file" id="backupFileInput" accept="application/json" style="display:none;">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">§4</span> Podsumowanie miesiąca</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="month-bar" id="monthBar"></div>
+    <p class="note" id="summaryNote"></p>
+  </div>
+
+  <p class="footer-note">Dane zapisują się automatycznie w pamięci tej przeglądarki (localStorage) — działa offline, bez logowania.</p>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let settings = { workerName:'', contractType:'etat', rate:30, threshold:8, otMult:1.5, holMult:2.0 };
+let entries = [];
+let currentMonth = null;
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function loadData(){
+  try{
+    const s = localStorage.getItem('ewidencja_settings');
+    if(s) settings = JSON.parse(s);
+  }catch(e){ console.error(e); }
+  try{
+    const e = localStorage.getItem('ewidencja_entries');
+    if(e) entries = JSON.parse(e);
+  }catch(e){ console.error(e); }
+  applySettingsToForm();
+  render(true);
+}
+
+function saveSettings(){
+  try{ localStorage.setItem('ewidencja_settings', JSON.stringify(settings)); }catch(e){ console.error(e); }
+}
+function saveEntries(){
+  try{ localStorage.setItem('ewidencja_entries', JSON.stringify(entries)); }catch(e){ console.error(e); }
+}
+
+function applySettingsToForm(){
+  $('workerName').value = settings.workerName || '';
+  $('contractType').value = settings.contractType;
+  $('rate').value = settings.rate;
+  $('threshold').value = settings.threshold;
+  $('otMult').value = settings.otMult;
+  $('holMult').value = settings.holMult;
+  toggleContractFields();
+}
+
+function toggleContractFields(){
+  const isEtat = $('contractType').value === 'etat';
+  $('thresholdWrap').style.display = isEtat ? '' : 'none';
+  $('otMultWrap').style.display = isEtat ? '' : 'none';
+  $('holMultWrap').style.display = '';
+}
+
+['workerName','contractType','rate','threshold','otMult','holMult'].forEach(id=>{
+  $(id).addEventListener('change', ()=>{
+    settings.workerName = $('workerName').value;
+    settings.contractType = $('contractType').value;
+    settings.rate = parseFloat($('rate').value)||0;
+    settings.threshold = parseFloat($('threshold').value)||8;
+    settings.otMult = parseFloat($('otMult').value)||1.5;
+    settings.holMult = parseFloat($('holMult').value)||2.0;
+    toggleContractFields();
+    saveSettings();
+    render();
+  });
+});
+
+function timeToMinutes(t){
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+
+function computeWorkedHours(from,to,breakMin){
+  let start = timeToMinutes(from);
+  let end = timeToMinutes(to);
+  if(end <= start) end += 24*60; // nocna zmiana
+  let worked = (end - start - (breakMin||0)) / 60;
+  return Math.max(0, worked);
+}
+
+function computeEntry(entry){
+  const worked = computeWorkedHours(entry.from, entry.to, entry.brk);
+  let regular = worked, overtime = 0;
+  if(settings.contractType === 'etat' && !entry.holiday){
+    regular = Math.min(worked, settings.threshold);
+    overtime = Math.max(0, worked - settings.threshold);
+  } else if(entry.holiday){
+    regular = 0;
+    overtime = worked; // cała praca w dzień wolny liczona wg mnożnika święta
+  }
+  const rate = settings.rate || 0;
+  const otRateMult = entry.holiday ? settings.holMult : settings.otMult;
+  const pay = regular*rate + overtime*rate*otRateMult;
+  return { worked, regular, overtime, pay, otRateMult };
+}
+
+function addOneDay(dateStr){
+  let [y,m,d] = dateStr.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  d += 1;
+  if(d > daysInMonth){ d = 1; m += 1; }
+  if(m > 12){ m = 1; y += 1; }
+  return `${y}-${pad(m)}-${pad(d)}`;
+}
+
+function addEntry(){
+  const date = $('eDate').value;
+  const from = $('eFrom').value;
+  const to = $('eTo').value;
+  const brk = parseInt($('eBreak').value)||0;
+  const note = $('eNote').value.trim();
+  const holiday = $('eHoliday').checked;
+  if(!date || !from || !to){
+    alert('Uzupełnij datę oraz godziny od / do.');
+    return;
+  }
+  entries.push({ id: Date.now(), date, from, to, brk, note, holiday });
+  entries.sort((a,b)=> a.date.localeCompare(b.date) || a.from.localeCompare(b.from));
+  $('eNote').value='';
+  $('eHoliday').checked=false;
+  saveEntries();
+  $('eDate').value = addOneDay(date);
+  render();
+}
+$('addBtn').addEventListener('click', addEntry);
+
+function deleteEntry(id){
+  entries = entries.filter(e=>e.id!==id);
+  saveEntries();
+  render();
+}
+window.deleteEntry = deleteEntry;
+
+function monthKey(dateStr){ return dateStr.slice(0,7); }
+function monthLabel(key){
+  const [y,m] = key.split('-');
+  const names = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+  return `${names[parseInt(m)-1]} ${y}`;
+}
+
+function populateMonthFilter(preferLatest){
+  const months = Array.from(new Set(entries.map(e=>monthKey(e.date)))).sort();
+  const sel = $('monthFilter');
+  const prev = currentMonth;
+  sel.innerHTML = '';
+  if(months.length===0){
+    const opt = document.createElement('option');
+    opt.textContent = 'brak wpisów';
+    opt.value='';
+    sel.appendChild(opt);
+    currentMonth = null;
+    return;
+  }
+  months.forEach(m=>{
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = monthLabel(m);
+    sel.appendChild(opt);
+  });
+  if(preferLatest){
+    currentMonth = months[months.length-1];
+  } else if(prev && months.includes(prev)){
+    currentMonth = prev;
+  } else {
+    currentMonth = months[months.length-1];
+  }
+  sel.value = currentMonth;
+}
+$('monthFilter').addEventListener('change', ()=>{ currentMonth = $('monthFilter').value; render(); });
+
+function renderTable(){
+  const rows = entries.filter(e=> !currentMonth || monthKey(e.date)===currentMonth);
+  const wrap = $('tableWrap');
+  if(rows.length===0){
+    wrap.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu. Dodaj pierwszą zmianę powyżej.</div>';
+    return;
+  }
+  const maxHours = Math.max(...rows.map(r=>computeEntry(r).worked), 10);
+  let html = `<table><thead><tr>
+    <th>Data</th><th>Godziny</th><th>Przerwa</th><th>Rozkład</th><th>Suma h</th><th>Kwota</th><th></th>
+  </tr></thead><tbody>`;
+  rows.forEach(e=>{
+    const c = computeEntry(e);
+    const regW = (c.regular/maxHours*100).toFixed(1);
+    const otW = (c.overtime/maxHours*100).toFixed(1);
+    html += `<tr>
+      <td class="mono">${e.date}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
+      <td class="mono">${e.from}–${e.to}</td>
+      <td class="mono">${e.brk} min</td>
+      <td><div class="hourbar"><div class="seg reg" style="left:0;width:${regW}%;"></div><div class="seg ot" style="left:${regW}%;width:${otW}%;"></div></div></td>
+      <td class="mono">${c.worked.toFixed(2)} h${c.overtime>0?`<br><span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${c.overtime.toFixed(2)} nadg.</span>`:''}</td>
+      <td class="mono">${c.pay.toFixed(2)} zł</td>
+      <td><button class="btn-danger" onclick="deleteEntry(${e.id})">Usuń</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderSummary(){
+  const rows = entries.filter(e=> !currentMonth || monthKey(e.date)===currentMonth);
+  let totalWorked=0, totalRegular=0, totalOvertime=0, totalPay=0;
+  rows.forEach(e=>{
+    const c = computeEntry(e);
+    totalWorked += c.worked; totalRegular += c.regular; totalOvertime += c.overtime; totalPay += c.pay;
+  });
+  const days = new Set(rows.map(r=>r.date)).size;
+  const avg = days ? (totalWorked/days) : 0;
+
+  $('summaryGrid').innerHTML = `
+    <div class="stat"><div class="label">Dni przepracowane</div><div class="value">${days}</div></div>
+    <div class="stat"><div class="label">Godziny łącznie</div><div class="value">${totalWorked.toFixed(2)} h</div></div>
+    <div class="stat"><div class="label">Godziny standardowe</div><div class="value">${totalRegular.toFixed(2)} h</div></div>
+    <div class="stat ot"><div class="label">Nadgodziny</div><div class="value">${totalOvertime.toFixed(2)} h</div></div>
+    <div class="stat"><div class="label">Śr. dzienna</div><div class="value">${avg.toFixed(2)} h</div></div>
+    <div class="stat pay"><div class="label">Wypłata brutto</div><div class="value">${totalPay.toFixed(2)} zł</div></div>
+  `;
+
+  const regShare = totalWorked ? (totalRegular/totalWorked*100) : 0;
+  const otShare = totalWorked ? (totalOvertime/totalWorked*100) : 0;
+  $('monthBar').innerHTML = totalWorked ? `
+    <div class="seg" style="width:${regShare}%;background:var(--teal);">${regShare>12?'standard':''}</div>
+    <div class="seg" style="width:${otShare}%;background:var(--amber);">${otShare>10?'nadg.':''}</div>
+  ` : '';
+
+  $('summaryNote').textContent = settings.contractType==='etat'
+    ? `Umowa o pracę · próg dobowy ${settings.threshold} h · nadgodziny ×${settings.otMult}, dni wolne/święta ×${settings.holMult}.`
+    : `Zlecenie / dzieło / B2B · brak naliczania nadgodzin, liczona jest suma godzin × stawka.`;
+}
+
+function renderClockRuler(){
+  const now = new Date();
+  $('clockRuler').textContent = now.toLocaleDateString('pl-PL',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
+function render(preferLatestMonth){
+  populateMonthFilter(!!preferLatestMonth);
+  renderTable();
+  renderSummary();
+}
+
+function toCSV(){
+  const rows = entries.filter(e=> !currentMonth || monthKey(e.date)===currentMonth);
+  let csv = 'Data;Od;Do;Przerwa (min);Godziny;Standardowe;Nadgodziny;Kwota;Wolne/Swieto;Notatka\n';
+  rows.forEach(e=>{
+    const c = computeEntry(e);
+    csv += [e.date,e.from,e.to,e.brk,c.worked.toFixed(2),c.regular.toFixed(2),c.overtime.toFixed(2),c.pay.toFixed(2),e.holiday?'tak':'nie',(e.note||'').replace(/;/g,',')].join(';') + '\n';
+  });
+  return csv;
+}
+$('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ewidencja_${currentMonth || 'wszystkie'}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('backupExportBtn').addEventListener('click', ()=>{
+  const backup = { settings, entries, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ewidencja_kopia_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+$('backupImportBtn').addEventListener('click', ()=> $('backupFileInput').click());
+$('backupFileInput').addEventListener('change', (ev)=>{
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!confirm('Wczytanie kopii nadpisze obecne dane w tej przeglądarce. Kontynuować?')) return;
+      if(data.settings) settings = data.settings;
+      if(data.entries) entries = data.entries;
+      saveSettings();
+      saveEntries();
+      applySettingsToForm();
+      render(true);
+      alert('Kopia wczytana pomyślnie.');
+    }catch(err){
+      alert('Nie udało się wczytać pliku — sprawdź, czy to poprawna kopia zapasowa (.json).');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+});
+
+renderClockRuler();
+$('eDate').valueAsDate = new Date();
+loadData();
+</script>
+</body>
+</html>
