@@ -70,7 +70,7 @@
   .stat{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-dim);}
   .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
   .stat .value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-top:4px;color:var(--ink);}
-  .stat.pay .value{color:var(--teal-dark);}
+  .stat.pay .value{color:#fff;}
   .stat.ot .value{color:var(--amber-dark);}
   .month-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-top:14px;border:1px solid var(--line);}
   .month-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;}
@@ -130,7 +130,16 @@
     .grid.entry{grid-template-columns:1fr 1fr;}
     .grid.entry > *:last-child{grid-column:span 2;}
   }
-  .sub{display:block;color:var(--muted);font:11.5px 'IBM Plex Mono',monospace;margin-top:2px}
+  .sub{display:inline-block;margin:5px 0 0;padding:2px 9px;border-radius:999px;background:#DCEBE8;color:var(--teal-dark);font:500 12px 'IBM Plex Mono',monospace}
+  td .sub{margin:3px 0 0 8px}
+  .ver{display:inline-block;margin-top:10px;font:11px 'IBM Plex Mono',monospace;color:var(--amber);border:1px solid #5a4b25;border-radius:4px;padding:2px 7px}
+  .preview{font:500 13px 'IBM Plex Mono',monospace;color:var(--teal-dark);background:#E3EEEC;border-radius:7px;padding:8px 12px;margin-top:12px}
+  .preview:empty{display:none}
+  .stat{border-left:4px solid var(--teal)}
+  .stat.ot{border-left-color:var(--amber)}
+  .stat.pay{background:var(--teal);border-color:var(--teal-dark);border-left-color:var(--amber)}
+  .stat.pay .label{color:#CFE3E0}
+  .tag.night{background:#DDE3F0;color:#37466B}
   tfoot td{font-weight:600;border-top:2px solid var(--ink-soft);border-bottom:0}
 </style>
 </head>
@@ -150,6 +159,7 @@
         <p class="brand-eyebrow">Panel główny</p>
         <h1>Ewidencja godzin</h1>
         <p class="subtitle">Wybierz siebie z listy albo dodaj nową osobę.</p>
+        <span class="ver">wersja 2.1 · godziny w h/min + dziesiętne</span>
       </div>
     </header>
 
@@ -212,6 +222,7 @@
         <input type="checkbox" id="eHoliday">
         <label for="eHoliday" style="margin:0;text-transform:none;font-weight:400;">To dzień wolny / niedziela / święto (wyższa stawka)</label>
       </div>
+      <div class="preview" id="entryPreview"></div>
     </div>
 
     <div class="card">
@@ -259,6 +270,7 @@
         <p class="brand-eyebrow">Panel administratora</p>
         <h1 id="adminTitle">Administrator</h1>
         <p class="subtitle">Podsumowanie godzin i wypłat wszystkich użytkowników.</p>
+        <span class="ver">wersja 2.1</span>
       </div>
     </header>
 
@@ -757,6 +769,7 @@ function toggleContractFields(){
 }
 
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+const wd = d => new Date(d+'T12:00:00').toLocaleDateString('pl-PL',{weekday:'short'});
 const hm  = m => `${Math.floor(m/60)} h ${pad(m%60)} min`;
 const dec = m => (m/60).toFixed(2).replace('.',',');
 const zl  = c => (c/100).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
@@ -771,7 +784,7 @@ function computeEntry(entry, settings){
   const c = (m,x)=> Math.round(m*rate*x/60*100);            // grosze
   const cr = c(reg,1), co = c(ot,settings.otMult||1.5), ch = c(hol,settings.holMult||2);
   const cents = cr+co+ch;
-  return { wMin, regMin:reg, otMin:ot, holMin:hol, cr, co, ch, cents,
+  return { night: timeToMinutes(entry.to) <= timeToMinutes(entry.from), wMin, regMin:reg, otMin:ot, holMin:hol, cr, co, ch, cents,
            worked:wMin/60, regular:reg/60, overtime:(ot+hol)/60, pay:cents/100 };
 }
 function addOneDay(dateStr){
@@ -832,11 +845,12 @@ function renderEntryTable(){
   if(rows.length===0){ wrap.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu.</div>'; return; }
   const maxHours = Math.max(...rows.map(r=>computeEntry(r,user.settings).worked), 10);
   let html = `<table><thead><tr><th>Data</th><th>Godziny</th><th>Przerwa</th><th>Rozkład</th><th>Czas pracy</th><th>Kwota</th><th></th></tr></thead><tbody>`;
+  let TW=0, TC=0;
   rows.forEach(e=>{
-    const c = computeEntry(e, user.settings);
+    const c = computeEntry(e, user.settings); TW+=c.wMin; TC+=c.cents;
     const regW = (c.regular/maxHours*100).toFixed(1), otW = (c.overtime/maxHours*100).toFixed(1);
     html += `<tr>
-      <td class="mono">${e.date}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
+      <td class="mono">${wd(e.date)} ${e.date}${c.night?' <span class="tag night">nocna</span>':''}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
       <td class="mono">${e.from}–${e.to}</td>
       <td class="mono">${e.brk} min</td>
       <td><div class="hourbar"><div class="seg reg" style="left:0;width:${regW}%;"></div><div class="seg ot" style="left:${regW}%;width:${otW}%;"></div></div></td>
@@ -845,7 +859,7 @@ function renderEntryTable(){
       <td><button class="btn-danger" onclick="deleteEntry(${e.id})">Usuń</button></td>
     </tr>`;
   });
-  html += '</tbody></table>';
+  html += `</tbody><tfoot><tr><td>Razem w widoku</td><td></td><td></td><td></td><td class="mono">${hm(TW)}<span class="sub">${TW} min ÷ 60 = ${dec(TW)} h</span></td><td class="mono">${zl(TC)}</td><td></td></tr></tfoot></table>`;
   wrap.innerHTML = html;
 }
 
@@ -1026,6 +1040,16 @@ function confirmAdminResetUserPin(userId){
   closeModal();
   alert(`Nowy PIN dla ${user.name} został ustawiony.`);
 }
+
+/* ---------- podgląd czasu przy dodawaniu wpisu ---------- */
+function updateEntryPreview(){
+  const f=$('eFrom').value, t=$('eTo').value;
+  if(!f||!t){ $('entryPreview').textContent=''; return; }
+  const a=timeToMinutes(f); let b=timeToMinutes(t); if(b<=a) b+=1440;
+  const m=Math.max(0,b-a-(parseInt($('eBreak').value)||0));
+  $('entryPreview').textContent=`Ten wpis: ${hm(m)}  (${m} min = ${dec(m)} h)`+(timeToMinutes(t)<=a?' · zmiana nocna':'');
+}
+['eFrom','eTo','eBreak'].forEach(i=>$(i).addEventListener('input',updateEntryPreview));
 
 /* ---------- init ---------- */
 $('adminBackBtn').addEventListener('click', backToStart);
