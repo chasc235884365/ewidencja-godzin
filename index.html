@@ -6,7 +6,8 @@
 <title>Ewidencja godzin pracy</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<meta name="theme-color" content="#1B2430">
+<meta name="theme-color" content="#F2F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D141B" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,120 +17,169 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1B2430;--ink-soft:#2C3746;--paper:#FAFAF7;--paper-dim:#F1EFE8;
-    --line:#DCD6C8;--teal:#2F6E6E;--teal-dark:#1F4C4C;--amber:#C9942A;--amber-dark:#8F6A17;
-    --red:#B3413A;--muted:#767065;--radius:10px;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--ink);color:var(--paper);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
-  .wrap{max-width:1040px;margin:0 auto;padding:28px 20px 60px;}
-  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
-  .brand-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0 0 6px;}
-  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;margin:0;letter-spacing:-0.01em;}
-  .subtitle{color:#B9C2C9;font-size:13.5px;margin-top:6px;max-width:480px;}
-  .card{background:var(--paper);color:var(--ink);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;box-shadow:0 1px 0 rgba(0,0,0,.25);}
-  .card h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin:0 0 14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
-  .card h2 .n{font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:12px;border:1px solid var(--teal);border-radius:4px;padding:1px 6px;}
-  .grid{display:grid;gap:12px;}
-  .grid.settings{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
-  .grid.entry{grid-template-columns:1.1fr .8fr .8fr .8fr 1.4fr auto;align-items:end;}
-  label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
-  input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],input[type=tel],select{
-    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;
-    font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--ink);
-  }
-  input:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;}
-  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
-  .checkbox-row input{width:auto;}
-  button{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;border:none;border-radius:7px;padding:10px 16px;cursor:pointer;transition:transform .08s ease,opacity .15s ease;}
-  button:active{transform:scale(.97);}
-  .btn-primary{background:var(--teal);color:#fff;}
-  .btn-primary:hover{background:var(--teal-dark);}
-  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
-  .btn-ghost:hover{background:var(--paper-dim);}
-  .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:5px 10px;font-size:11.5px;}
-  .btn-danger:hover{background:var(--red);color:#fff;}
-  .btn-block{width:100%;}
-  table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px;}
-  #tableWrap,#adminTableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .scroll-hint{display:none;font-size:11px;color:var(--muted);margin:-6px 0 8px;}
-  @media (max-width:680px){.scroll-hint{display:block;}}
-  thead th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 8px;}
-  tbody td{padding:10px 8px;border-bottom:1px solid var(--paper-dim);vertical-align:middle;}
-  tbody tr:hover{background:var(--paper-dim);}
-  .mono{font-family:'IBM Plex Mono',monospace;}
-  .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 6px;border-radius:4px;background:var(--paper-dim);color:var(--muted);}
-  .tag.holiday{background:#F4E3D0;color:var(--amber-dark);}
-  .hourbar{position:relative;width:100%;height:14px;background:var(--paper-dim);border-radius:4px;overflow:hidden;min-width:90px;}
-  .hourbar .seg{position:absolute;top:0;bottom:0;}
-  .hourbar .reg{background:var(--teal);}
-  .hourbar .ot{background:var(--amber);}
-  .empty{color:var(--muted);font-size:13px;padding:22px 4px;text-align:center;}
-  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
-  .stat{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-dim);}
-  .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
-  .stat .value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-top:4px;color:var(--ink);}
-  .stat.pay .value{color:var(--teal-dark);}
-  .stat.ot .value{color:var(--amber-dark);}
-  .month-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-top:14px;border:1px solid var(--line);}
-  .month-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;}
-  .toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
-  .month-select{display:flex;align-items:center;gap:8px;}
-  .month-select select{width:auto;min-width:150px;}
-  .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
-  .footer-note{color:#7C858E;font-size:11.5px;text-align:center;margin-top:24px;}
+:root{
+  color-scheme:light dark;
+  --bg:#F2F3EF;--surface:#FFFFFF;--surface2:#F6F7F4;--ink:#141C26;--ink-soft:#3A4655;--muted:#69737F;--line:#E2E4DE;
+  --teal:#0F766E;--teal-dark:#0B5A54;--teal-soft:#DDF0EC;--on-teal:#FFFFFF;
+  --amber:#D4952A;--amber-dark:#8A5F0F;--amber-soft:#FBEED3;
+  --red:#C0443B;--red-soft:#F6D9D6;--blue:#3B4F86;--blue-soft:#E3E8F5;
+  --hero1:#14403F;--hero2:#0B2A2E;
+  --radius:18px;--shadow:0 1px 2px rgba(20,28,38,.05),0 10px 28px rgba(20,28,38,.07);
+  --paper:var(--surface);--paper-dim:var(--surface2);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0D141B;--surface:#16202A;--surface2:#1B2733;--ink:#EDF1F4;--ink-soft:#C3CCD5;--muted:#8D99A6;--line:#27343F;
+  --teal:#2DB3A6;--teal-dark:#6FD6CB;--teal-soft:#15353A;--on-teal:#04211F;
+  --amber:#E0A840;--amber-dark:#F0C878;--amber-soft:#3A2F17;
+  --red:#E46A60;--red-soft:#3C1F1D;--blue:#A3B7EE;--blue-soft:#1F2A44;
+  --hero1:#14403F;--hero2:#0A242A;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:960px;margin:0 auto;padding:26px 16px 70px}
+.mono{font-family:'IBM Plex Mono',monospace}
 
-  /* start screen */
-  .start-actions{display:flex;gap:12px;flex-wrap:wrap;}
-  .start-actions button{flex:1;min-width:170px;}
-  .person-list{display:flex;flex-direction:column;gap:8px;}
-  .person-card{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;
-  }
-  .person-card:hover{border-color:var(--teal);}
-  .person-card .pname{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;}
-  .lock-icon{font-size:13px;color:var(--muted);}
-  .person-actions{display:flex;gap:6px;align-items:center;}
-  .icon-btn{background:transparent;border:none;color:var(--muted);font-size:15px;padding:4px 6px;cursor:pointer;}
-  .icon-btn:hover{color:var(--red);}
+/* nagłówek */
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.brand-eyebrow{display:inline-block;margin:0 0 10px;padding:4px 11px;border-radius:999px;background:var(--teal-soft);color:var(--teal-dark);font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+h1{font:700 clamp(27px,5.5vw,36px)/1.1 'Space Grotesk',sans-serif;margin:0;letter-spacing:-.02em}
+.subtitle{color:var(--muted);font-size:14.5px;margin:8px 0 0;max-width:520px}
 
-  /* back button */
-  .back-btn{background:transparent;color:var(--paper);border:1px solid #3C4757;padding:8px 14px;margin-bottom:14px;}
-  .back-btn:hover{background:#242E3B;}
+/* karty */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow);animation:rise .4s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.card,.modal-box{animation:none}}
+.card h2{font:600 17px 'Space Grotesk',sans-serif;margin:0 0 16px;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.card h2 .n{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:8px;background:var(--teal-soft);color:var(--teal-dark);font:600 12px 'IBM Plex Mono',monospace}
+.note{font-size:12.5px;color:var(--muted);margin:12px 0 0;line-height:1.55}
+.empty{color:var(--muted);font-size:13.5px;padding:24px 12px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.footer-note{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 
-  /* locked summary overlay */
-  .locked-wrap{position:relative;}
-  .lock-overlay{
-    position:absolute;inset:0;background:rgba(250,250,247,.86);backdrop-filter:blur(3px);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-    border-radius:8px;text-align:center;padding:20px;
-  }
-  .lock-overlay .lock-emoji{font-size:26px;}
-  .lock-overlay p{margin:0;font-size:13px;color:var(--ink-soft);max-width:260px;}
+/* formularze */
+.grid{display:grid;gap:14px}
+.grid.settings{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.grid.entry{grid-template-columns:1.2fr .9fr .9fr .9fr 1.6fr auto;align-items:end}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:500}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],select{
+  width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);
+  font:14px 'IBM Plex Mono',monospace;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.checkbox-row{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13.5px;color:var(--ink-soft)}
+.checkbox-row input{width:18px;height:18px;accent-color:var(--teal);margin:0}
+.checkbox-row label{margin:0}
+.preview{margin-top:14px;padding:10px 14px;border-radius:12px;background:var(--teal-soft);color:var(--teal-dark);font:500 13px 'IBM Plex Mono',monospace}
+.preview:empty{display:none}
 
-  /* modal */
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(10,14,20,.65);display:flex;align-items:center;justify-content:center;
-    padding:20px;z-index:50;
-  }
-  .modal-box{background:var(--paper);color:var(--ink);border-radius:var(--radius);padding:24px;max-width:400px;width:100%;max-height:88vh;overflow-y:auto;}
-  .modal-box h3{font-family:'Space Grotesk',sans-serif;margin:0 0 14px;font-size:17px;}
-  .modal-box .field{margin-bottom:12px;}
-  .pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0;}
-  .pin-display input{
-    width:48px;height:56px;text-align:center;font-size:22px;letter-spacing:0;
-  }
-  .modal-actions{display:flex;gap:10px;margin-top:16px;}
-  .modal-actions button{flex:1;}
-  .modal-error{color:var(--red);font-size:12.5px;margin-top:8px;display:none;}
-  .link-btn{background:none;border:none;color:var(--teal-dark);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:6px 0;}
+/* przyciski */
+button{font:600 14px 'Space Grotesk',sans-serif;border:0;border-radius:12px;height:44px;padding:0 20px;cursor:pointer;transition:transform .1s,background .15s,box-shadow .15s,border-color .15s}
+button:active{transform:scale(.97)}
+.btn-primary{background:var(--teal);color:var(--on-teal);box-shadow:0 4px 12px rgba(15,118,110,.25)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-block{width:100%}
+.btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--muted)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red-soft);height:34px;padding:0 13px;font-size:12.5px}
+.btn-danger:hover{background:var(--red);border-color:var(--red);color:#fff}
+.back-btn{background:var(--surface);color:var(--ink-soft);border:1px solid var(--line);height:38px;padding:0 16px;margin-bottom:16px;font-size:13px}
+.back-btn:hover{border-color:var(--teal)}
+.link-btn{background:none;border:none;color:var(--teal-dark);font:500 13px 'IBM Plex Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:6px 0;height:auto}
+.icon-btn{background:transparent;border:none;color:var(--muted);font-size:15px;padding:4px 8px;height:auto;cursor:pointer}
+.icon-btn:hover{color:var(--red)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.month-select{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.month-select label{margin:0}
+.month-select select{width:auto;min-width:160px}
+.scroll-hint{display:none!important}
 
-  @media (max-width:720px){
-    .grid.entry{grid-template-columns:1fr 1fr;}
-    .grid.entry > *:last-child{grid-column:span 2;}
-  }
+/* ekran startowy */
+.start-actions{display:flex;gap:12px;flex-wrap:wrap}
+.start-actions button{flex:1;min-width:190px}
+.person-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.person-list .empty{grid-column:1/-1}
+.person-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+.person-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pname{display:flex;align-items:center;gap:12px;font:600 15.5px 'Space Grotesk',sans-serif}
+.avatar{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal-dark);font:700 17px 'Space Grotesk',sans-serif;flex:none}
+.avatar.admin{background:var(--amber-soft);color:var(--amber-dark)}
+.person-actions{display:flex;gap:6px;align-items:center}
+.lock-icon{font:12px 'IBM Plex Mono',monospace;color:var(--muted)}
+
+/* lista wpisów */
+.elist{display:flex;flex-direction:column;gap:8px}
+.erow{display:grid;grid-template-columns:62px 1fr auto auto auto;grid-template-areas:"date main dur pay del";gap:6px 18px;align-items:center;padding:12px 16px 12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);transition:border-color .12s}
+.erow:hover{border-color:var(--teal)}
+.e-date{grid-area:date;text-align:center;line-height:1.1}
+.e-date b{display:block;font:700 26px 'Space Grotesk',sans-serif}
+.e-date span{font:11px 'IBM Plex Mono',monospace;color:var(--muted)}
+.e-main{grid-area:main;min-width:0}
+.e-time{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font:600 14px 'IBM Plex Mono',monospace}
+.e-time .muted{font-weight:400;font-size:12.5px;color:var(--muted)}
+.e-note{font-size:12.5px;color:var(--muted);margin-top:4px}
+.e-dur{grid-area:dur;text-align:right}
+.e-dur b{display:block;font:600 15px 'IBM Plex Mono',monospace}
+.e-dur span{font:12.5px 'IBM Plex Mono',monospace;color:var(--muted)}
+.e-pay{grid-area:pay;min-width:100px;text-align:right;font:600 15px 'IBM Plex Mono',monospace;color:var(--teal-dark)}
+.e-del{grid-area:del}
+.erow.total{background:var(--teal-soft);border-color:transparent}
+.hourbar{position:relative;height:8px;margin-top:9px;border-radius:999px;background:var(--line);overflow:hidden;max-width:460px}
+.hourbar .seg{position:absolute;top:0;bottom:0}
+.seg.reg{background:var(--teal)}.seg.ot{background:var(--amber)}
+.tag{display:inline-block;font:500 11px 'IBM Plex Mono',monospace;padding:2px 9px;border-radius:999px;background:var(--amber-soft);color:var(--amber-dark)}
+.tag.night{background:var(--blue-soft);color:var(--blue)}
+@media (max-width:640px){
+  .erow{grid-template-columns:50px 1fr auto;grid-template-areas:"date main dur" "date pay del";gap:6px 12px}
+  .e-pay{text-align:left}
+  .grid.entry{grid-template-columns:1fr 1fr}.grid.entry>*:last-child{grid-column:span 2}
+  .card{padding:18px 16px}
+}
+
+/* podsumowanie */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.hero{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px 36px;padding:24px 28px;border-radius:18px;background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#F2F7F6}
+.hero .label{font-size:12.5px;color:#9FC9C4}
+.hero-time{font:700 clamp(34px,7vw,50px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.02em;margin:6px 0 4px}
+.hero-money{font:700 clamp(30px,6vw,42px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.02em;margin:6px 0 4px;color:#F6D58E}
+.hero-sub{font:13px 'IBM Plex Mono',monospace;color:#9FC9C4}
+.hero-pay{text-align:right}
+@media (max-width:520px){.hero-pay{text-align:left}}
+.stat{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--surface2)}
+.stat .label{font-size:12.5px;color:var(--muted)}
+.stat .value{font:600 21px 'IBM Plex Mono',monospace;margin-top:5px}
+.stat .dec{font:13px 'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+.stat.ot .value{color:var(--amber-dark)}
+.month-bar{display:flex;height:24px;border-radius:999px;overflow:hidden;margin:16px 0 4px;background:var(--line)}
+.month-bar .seg{display:flex;align-items:center;justify-content:center;font:500 10.5px 'IBM Plex Mono',monospace;color:#fff}
+
+/* panel admina */
+.urow{display:grid;grid-template-columns:minmax(130px,1.3fr) repeat(3,minmax(100px,1fr)) minmax(100px,1fr) auto;gap:10px 16px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);margin-bottom:8px}
+.urow.total{background:var(--teal-soft);border-color:transparent}
+.u-name{font:600 15.5px 'Space Grotesk',sans-serif;display:flex;align-items:center;gap:10px}
+.u-l{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}
+.u-v{font:600 14.5px 'IBM Plex Mono',monospace}
+.u-d{font:12.5px 'IBM Plex Mono',monospace;color:var(--muted)}
+.u-pay{color:var(--teal-dark)}
+.u-actions{display:flex;gap:8px;flex-wrap:wrap}
+.u-actions button{height:36px;padding:0 14px;font-size:13px}
+@media (max-width:760px){.urow{grid-template-columns:1fr 1fr}.u-name,.u-actions{grid-column:1/-1}}
+
+/* blokada PIN */
+.locked-wrap{position:relative;min-height:230px}
+.lock-overlay{position:absolute;inset:0;background:color-mix(in srgb,var(--surface) 80%,transparent);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:var(--radius);text-align:center;padding:20px}
+.lock-overlay .lock-emoji{font-size:30px}
+.lock-overlay p{margin:0;font-size:14px;color:var(--ink-soft);max-width:280px}
+
+/* okna modalne */
+.modal-overlay{position:fixed;inset:0;background:rgba(8,12,18,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal-box{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:26px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:rise .25s ease both}
+.modal-box h3{font:600 19px 'Space Grotesk',sans-serif;margin:0 0 14px}
+.modal-box .field{margin-bottom:14px}
+.pin-display{display:flex;gap:10px;justify-content:center;margin:18px 0}
+.pin-display input{width:54px;height:62px;text-align:center;font-size:24px;padding:0;border-radius:14px}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions button{flex:1}
+.modal-error{color:var(--red);font-size:13px;margin-top:8px;display:none}
 </style>
 </head>
 <body>
@@ -145,7 +195,7 @@
   <div id="screen-start" style="display:none;">
     <header>
       <div>
-        <p class="brand-eyebrow">Panel główny</p>
+        <p class="brand-eyebrow">Panel główny · v3.0</p>
         <h1>Ewidencja godzin</h1>
         <p class="subtitle">Wybierz siebie z listy albo dodaj nową osobę.</p>
       </div>
@@ -169,7 +219,7 @@
       <div class="person-list" id="userList"></div>
     </div>
 
-    <p class="footer-note">Dane zapisują się automatycznie w pamięci tej przeglądarki (localStorage).</p>
+    <p class="footer-note">Dane synchronizują się automatycznie w chmurze – widać je na każdym urządzeniu.</p>
   </div>
 
   <!-- ============ USER TIMESHEET SCREEN ============ -->
@@ -210,6 +260,7 @@
         <input type="checkbox" id="eHoliday">
         <label for="eHoliday" style="margin:0;text-transform:none;font-weight:400;">To dzień wolny / niedziela / święto (wyższa stawka)</label>
       </div>
+      <div class="preview" id="entryPreview"></div>
     </div>
 
     <div class="card">
@@ -702,7 +753,7 @@ function renderStart(){
   const aWrap = $('adminList'), uWrap = $('userList');
   aWrap.innerHTML = appData.admins.length ? appData.admins.map(a=>`
     <div class="person-card" onclick="requestAdminLogin(${a.id})">
-      <span class="pname">🔑 ${escapeHtml(a.name)}</span>
+      <span class="pname"><span class="avatar admin">${escapeHtml((a.name||"?").charAt(0).toUpperCase())}</span>${escapeHtml(a.name)}</span>
       <span class="person-actions"><span class="lock-icon">chroniony PIN</span>
         <button class="icon-btn" onclick="deletePerson('admin', ${a.id}, event)" title="Usuń">✕</button>
       </span>
@@ -710,7 +761,7 @@ function renderStart(){
 
   uWrap.innerHTML = appData.users.length ? appData.users.map(u=>`
     <div class="person-card" onclick="selectUser(${u.id})">
-      <span class="pname">👤 ${escapeHtml(u.name)}</span>
+      <span class="pname"><span class="avatar">${escapeHtml((u.name||"?").charAt(0).toUpperCase())}</span>${escapeHtml(u.name)}</span>
       <span class="person-actions"><span class="lock-icon">${u.entries.length} wpis(ów)</span>
         <button class="icon-btn" onclick="deletePerson('user', ${u.id}, event)" title="Usuń">✕</button>
       </span>
@@ -754,24 +805,25 @@ function toggleContractFields(){
 }
 
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
-function computeWorkedHours(from,to,breakMin){
-  let start = timeToMinutes(from), end = timeToMinutes(to);
-  if(end <= start) end += 24*60;
-  return Math.max(0, (end - start - (breakMin||0)) / 60);
-}
+const MON=['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+const wd  = d => new Date(d+'T12:00:00').toLocaleDateString('pl-PL',{weekday:'short'});
+const hm  = m => `${Math.floor(m/60)} h ${pad(m%60)} min`;
+const dec = m => (m/60).toFixed(2).replace('.',',');
+const zl  = c => (c/100).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
 function computeEntry(entry, settings){
-  const worked = computeWorkedHours(entry.from, entry.to, entry.brk);
-  let regular = worked, overtime = 0;
-  if(settings.contractType === 'etat' && !entry.holiday){
-    regular = Math.min(worked, settings.threshold);
-    overtime = Math.max(0, worked - settings.threshold);
-  } else if(entry.holiday){
-    regular = 0; overtime = worked;
-  }
+  let st = timeToMinutes(entry.from), en = timeToMinutes(entry.to);
+  const night = en <= st;
+  if(night) en += 1440;                                        // zmiana nocna
+  const wMin = Math.max(0, en - st - (entry.brk||0));
+  let reg = wMin, ot = 0, hol = 0;
+  if(entry.holiday){ reg = 0; hol = wMin; }
+  else if(settings.contractType === 'etat'){ reg = Math.min(wMin, Math.round(settings.threshold*60)); ot = wMin - reg; }
   const rate = settings.rate || 0;
-  const otRateMult = entry.holiday ? settings.holMult : settings.otMult;
-  const pay = regular*rate + overtime*rate*otRateMult;
-  return { worked, regular, overtime, pay };
+  const c = (m,x)=> Math.round(m*rate*x/60*100);               // grosze
+  const cr = c(reg,1), co = c(ot,settings.otMult||1.5), ch = c(hol,settings.holMult||2);
+  const cents = cr+co+ch;
+  return { night, wMin, regMin:reg, otMin:ot, holMin:hol, cr, co, ch, cents,
+           worked:wMin/60, regular:reg/60, overtime:(ot+hol)/60, pay:cents/100 };
 }
 function addOneDay(dateStr){
   let [y,m,d] = dateStr.split('-').map(Number);
@@ -828,23 +880,28 @@ function renderEntryTable(){
   const user = getUser(currentUserId);
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
   const wrap = $('tableWrap');
-  if(rows.length===0){ wrap.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu.</div>'; return; }
-  const maxHours = Math.max(...rows.map(r=>computeEntry(r,user.settings).worked), 10);
-  let html = `<table><thead><tr><th>Data</th><th>Godziny</th><th>Przerwa</th><th>Rozkład</th><th>Suma h</th><th>Kwota</th><th></th></tr></thead><tbody>`;
-  rows.forEach(e=>{
-    const c = computeEntry(e, user.settings);
-    const regW = (c.regular/maxHours*100).toFixed(1), otW = (c.overtime/maxHours*100).toFixed(1);
-    html += `<tr>
-      <td class="mono">${e.date}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
-      <td class="mono">${e.from}–${e.to}</td>
-      <td class="mono">${e.brk} min</td>
-      <td><div class="hourbar"><div class="seg reg" style="left:0;width:${regW}%;"></div><div class="seg ot" style="left:${regW}%;width:${otW}%;"></div></div></td>
-      <td class="mono">${c.worked.toFixed(2)} h${c.overtime>0?`<br><span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${c.overtime.toFixed(2)} nadg.</span>`:''}</td>
-      <td class="mono">${c.pay.toFixed(2)} zł</td>
-      <td><button class="btn-danger" onclick="deleteEntry(${e.id})">Usuń</button></td>
-    </tr>`;
+  if(rows.length===0){ wrap.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu. Dodaj pierwszą zmianę powyżej.</div>'; return; }
+  const calcs = rows.map(e=>computeEntry(e,user.settings));
+  const maxMin = Math.max(...calcs.map(c=>c.wMin), 600);
+  let TW=0, TC=0, html='<div class="elist">';
+  rows.forEach((e,i)=>{
+    const c=calcs[i]; TW+=c.wMin; TC+=c.cents;
+    const rg=(c.regMin/maxMin*100).toFixed(1), og=((c.otMin+c.holMin)/maxMin*100).toFixed(1);
+    html += `<div class="erow">
+      <div class="e-date"><b>${e.date.slice(8,10)}</b><span>${wd(e.date)} · ${MON[+e.date.slice(5,7)-1]}</span></div>
+      <div class="e-main">
+        <div class="e-time">${e.from}–${e.to}<span class="muted">przerwa ${e.brk} min</span>${c.night?'<span class="tag night">nocna</span>':''}${e.holiday?'<span class="tag">wolne/święto</span>':''}${c.otMin>0?`<span class="tag">+${hm(c.otMin)} nadg.</span>`:''}</div>
+        <div class="hourbar"><div class="seg reg" style="left:0;width:${rg}%"></div><div class="seg ot" style="left:${rg}%;width:${og}%"></div></div>
+        ${e.note?`<div class="e-note">${escapeHtml(e.note)}</div>`:''}
+      </div>
+      <div class="e-dur"><b>${hm(c.wMin)}</b><span>${dec(c.wMin)} h</span></div>
+      <div class="e-pay">${zl(c.cents)}</div>
+      <button class="btn-danger e-del" onclick="deleteEntry(${e.id})">Usuń</button>
+    </div>`;
   });
-  html += '</tbody></table>';
+  html += `<div class="erow total"><div class="e-date"><b>Σ</b><span>razem</span></div>
+    <div class="e-main"><div class="e-time">${rows.length} ${rows.length===1?'wpis':(rows.length%10>=2&&rows.length%10<=4&&(rows.length%100<12||rows.length%100>14))?'wpisy':'wpisów'} w tym miesiącu</div></div>
+    <div class="e-dur"><b>${hm(TW)}</b><span>${dec(TW)} h</span></div><div class="e-pay">${zl(TC)}</div><span></span></div></div>`;
   wrap.innerHTML = html;
 }
 
@@ -853,26 +910,23 @@ function renderSummary(){
   const lockEl = $('summaryLock');
   if(!summaryUnlocked){ lockEl.style.display='flex'; $('summaryGrid').innerHTML=''; $('monthBar').innerHTML=''; $('summaryNote').textContent=''; return; }
   lockEl.style.display='none';
+  const S = user.settings;
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
-  let totalWorked=0, totalRegular=0, totalOvertime=0, totalPay=0;
-  rows.forEach(e=>{ const c = computeEntry(e,user.settings); totalWorked+=c.worked; totalRegular+=c.regular; totalOvertime+=c.overtime; totalPay+=c.pay; });
-  const days = new Set(rows.map(r=>r.date)).size;
-  const avg = days ? (totalWorked/days) : 0;
-  const totMin = Math.round(totalWorked*60);
-  const totHM = Math.floor(totMin/60) + ' h ' + pad(totMin%60) + ' min';
-  $('summaryGrid').innerHTML = `
-    <div class="stat"><div class="label">Dni przepracowane</div><div class="value">${days}</div></div>
-    <div class="stat"><div class="label">Godziny łącznie</div><div class="value">${totalWorked.toFixed(2)} h</div></div>
-    <div class="stat"><div class="label">Czas (godz. i min)</div><div class="value" style="font-size:18px;">${totHM}</div></div>
-    <div class="stat"><div class="label">Godziny standardowe</div><div class="value">${totalRegular.toFixed(2)} h</div></div>
-    <div class="stat ot"><div class="label">Nadgodziny</div><div class="value">${totalOvertime.toFixed(2)} h</div></div>
-    <div class="stat"><div class="label">Śr. dzienna</div><div class="value">${avg.toFixed(2)} h</div></div>
-    <div class="stat pay"><div class="label">Wypłata brutto</div><div class="value">${totalPay.toFixed(2)} zł</div></div>
-  `;
-  const regShare = totalWorked ? (totalRegular/totalWorked*100) : 0, otShare = totalWorked ? (totalOvertime/totalWorked*100) : 0;
-  $('monthBar').innerHTML = totalWorked ? `<div class="seg" style="width:${regShare}%;background:var(--teal);">${regShare>12?'standard':''}</div><div class="seg" style="width:${otShare}%;background:var(--amber);">${otShare>10?'nadg.':''}</div>` : '';
-  $('summaryNote').textContent = user.settings.contractType==='etat'
-    ? `Umowa o pracę · próg dobowy ${user.settings.threshold} h · nadgodziny ×${user.settings.otMult}, dni wolne/święta ×${user.settings.holMult}.`
+  const t = {w:0,reg:0,ot:0,hol:0,cents:0};
+  rows.forEach(e=>{ const c=computeEntry(e,S); t.w+=c.wMin; t.reg+=c.regMin; t.ot+=c.otMin; t.hol+=c.holMin; t.cents+=c.cents; });
+  const days = new Set(rows.map(r=>r.date)).size, avg = days ? Math.round(t.w/days) : 0, extra = t.ot+t.hol;
+  const tile = (cls,label,m)=>`<div class="stat ${cls}"><div class="label">${label}</div><div class="value">${hm(m)}</div><div class="dec">${dec(m)} h</div></div>`;
+  $('summaryGrid').innerHTML =
+    `<div class="hero">
+       <div><div class="label">Czas pracy łącznie</div><div class="hero-time">${hm(t.w)}</div><div class="hero-sub">${dec(t.w)} h · ${t.w} min</div></div>
+       <div class="hero-pay"><div class="label">Wypłata brutto</div><div class="hero-money">${zl(t.cents)}</div><div class="hero-sub">stawka ${String(S.rate||0).replace('.',',')} zł/h</div></div>
+     </div>` +
+    `<div class="stat"><div class="label">Dni z wpisem</div><div class="value">${days}</div></div>` +
+    tile('','Godziny standardowe',t.reg) + tile('ot','Nadgodziny / święta',extra) + tile('','Średnio dziennie',avg);
+  const rs = t.w ? t.reg/t.w*100 : 0, os = t.w ? extra/t.w*100 : 0;
+  $('monthBar').innerHTML = t.w ? `<div class="seg" style="width:${rs}%;background:var(--teal);">${rs>12?'standard':''}</div><div class="seg" style="width:${os}%;background:var(--amber);">${os>10?'nadg.':''}</div>` : '';
+  $('summaryNote').textContent = S.contractType==='etat'
+    ? `Umowa o pracę · próg dobowy ${S.threshold} h · nadgodziny ×${S.otMult}, dni wolne/święta ×${S.holMult}.`
     : `Zlecenie / dzieło / B2B · brak naliczania nadgodzin, liczona jest suma godzin × stawka.`;
 }
 
@@ -885,10 +939,10 @@ function renderTimesheet(preferLatest){
 function toCSV(){
   const user = getUser(currentUserId);
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
-  let csv = 'Data;Od;Do;Przerwa (min);Godziny;Standardowe;Nadgodziny;Kwota;Wolne/Swieto;Notatka\n';
+  let csv = '\uFEFFData;Od;Do;Przerwa (min);Czas (h min);Minuty;Godziny dziesietne;Standardowe (min);Nadgodziny (min);Kwota (zl);Wolne/Swieto;Notatka\n';
   rows.forEach(e=>{
     const c = computeEntry(e, user.settings);
-    csv += [e.date,e.from,e.to,e.brk,c.worked.toFixed(2),c.regular.toFixed(2),c.overtime.toFixed(2),c.pay.toFixed(2),e.holiday?'tak':'nie',(e.note||'').replace(/;/g,',')].join(';') + '\n';
+    csv += [e.date,e.from,e.to,e.brk,hm(c.wMin),c.wMin,dec(c.wMin),c.regMin,c.otMin+c.holMin,(c.cents/100).toFixed(2).replace('.',','),e.holiday?'tak':'nie',(e.note||'').replace(/;/g,',')].join(';') + '\n';
   });
   return csv;
 }
@@ -972,23 +1026,22 @@ function renderAdminScreen(preferLatest){
   populateAdminMonthFilter(!!preferLatest);
   const wrap = $('adminTableWrap');
   if(appData.users.length===0){ wrap.innerHTML = '<div class="empty">Brak użytkowników w systemie.</div>'; return; }
-  let html = `<table><thead><tr><th>Użytkownik</th><th>Dni</th><th>Godziny</th><th>Nadgodziny</th><th>Wypłata</th><th></th><th></th></tr></thead><tbody>`;
+  const T = {d:0,w:0,ex:0,cents:0};
+  const cell = (l,v,d,cls)=>`<div><span class="u-l">${l}</span><div class="u-v ${cls||''}">${v}</div>${d?`<div class="u-d">${d}</div>`:''}</div>`;
+  let html = '';
   appData.users.forEach(u=>{
     const rows = u.entries.filter(e=> !currentAdminMonth || monthKey(e.date)===currentAdminMonth);
-    let worked=0, ot=0, pay=0;
-    rows.forEach(e=>{ const c = computeEntry(e,u.settings); worked+=c.worked; ot+=c.overtime; pay+=c.pay; });
+    let w=0, ex=0, cents=0;
+    rows.forEach(e=>{ const c = computeEntry(e,u.settings); w+=c.wMin; ex+=c.otMin+c.holMin; cents+=c.cents; });
     const days = new Set(rows.map(r=>r.date)).size;
-    html += `<tr>
-      <td class="mono">${escapeHtml(u.name)}</td>
-      <td class="mono">${days}</td>
-      <td class="mono">${worked.toFixed(2)} h</td>
-      <td class="mono">${ot.toFixed(2)} h</td>
-      <td class="mono">${pay.toFixed(2)} zł</td>
-      <td><button class="btn-ghost" onclick="selectUserFromAdmin(${u.id})">Szczegóły</button></td>
-      <td><button class="btn-ghost" onclick="openAdminResetUserPin(${u.id})">Reset PIN</button></td>
-    </tr>`;
+    T.d+=days; T.w+=w; T.ex+=ex; T.cents+=cents;
+    html += `<div class="urow">
+      <div class="u-name"><span class="avatar">${escapeHtml((u.name||'?').charAt(0).toUpperCase())}</span>${escapeHtml(u.name)}</div>
+      ${cell('Dni',days)}${cell('Czas pracy',hm(w),dec(w)+' h')}${cell('Nadgodziny / święta',hm(ex),dec(ex)+' h')}${cell('Wypłata',zl(cents),'','u-pay')}
+      <div class="u-actions"><button class="btn-ghost" onclick="selectUserFromAdmin(${u.id})">Szczegóły</button><button class="btn-ghost" onclick="openAdminResetUserPin(${u.id})">Reset PIN</button></div>
+    </div>`;
   });
-  html += '</tbody></table>';
+  html += `<div class="urow total"><div class="u-name">Razem</div>${cell('Dni',T.d)}${cell('Czas pracy',hm(T.w),dec(T.w)+' h')}${cell('Nadgodziny / święta',hm(T.ex),dec(T.ex)+' h')}${cell('Do wypłaty',zl(T.cents),'','u-pay')}<div></div></div>`;
   wrap.innerHTML = html;
 }
 function openAdminResetUserPin(userId){
@@ -1020,6 +1073,16 @@ function confirmAdminResetUserPin(userId){
   closeModal();
   alert(`Nowy PIN dla ${user.name} został ustawiony.`);
 }
+
+/* ---------- podgląd czasu przy dodawaniu wpisu ---------- */
+function updateEntryPreview(){
+  const f=$('eFrom').value, t=$('eTo').value;
+  if(!f||!t){ $('entryPreview').textContent=''; return; }
+  const a=timeToMinutes(f); let b=timeToMinutes(t); if(b<=a) b+=1440;
+  const m=Math.max(0,b-a-(parseInt($('eBreak').value)||0));
+  $('entryPreview').textContent=`Ten wpis: ${hm(m)}  (${dec(m)} h)`+(timeToMinutes(t)<=a?' · zmiana nocna':'');
+}
+['eFrom','eTo','eBreak'].forEach(i=>$(i).addEventListener('input',updateEntryPreview));
 
 /* ---------- init ---------- */
 $('adminBackBtn').addEventListener('click', backToStart);
