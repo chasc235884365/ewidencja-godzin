@@ -66,11 +66,11 @@
   .hourbar .reg{background:var(--teal);}
   .hourbar .ot{background:var(--amber);}
   .empty{color:var(--muted);font-size:13px;padding:22px 4px;text-align:center;}
-  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
   .stat{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-dim);}
   .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
   .stat .value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-top:4px;color:var(--ink);}
-  .stat.pay .value{color:#fff;}
+  .stat.pay .value{color:var(--teal-dark);}
   .stat.ot .value{color:var(--amber-dark);}
   .month-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-top:14px;border:1px solid var(--line);}
   .month-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;}
@@ -130,22 +130,6 @@
     .grid.entry{grid-template-columns:1fr 1fr;}
     .grid.entry > *:last-child{grid-column:span 2;}
   }
-  .sub{display:inline;margin:0 0 0 8px;color:var(--muted);font:12px 'IBM Plex Mono',monospace}
-  .ver{display:inline-block;margin-top:10px;font:11px 'IBM Plex Mono',monospace;color:var(--amber);border:1px solid #5a4b25;border-radius:4px;padding:2px 7px}
-  .preview{font:500 13px 'IBM Plex Mono',monospace;color:var(--teal-dark);background:#E3EEEC;border-radius:7px;padding:8px 12px;margin-top:12px}
-  .preview:empty{display:none}
-  .stat{border-left:4px solid var(--teal)}
-  .stat.clock{grid-column:1/-1;background:var(--ink);border-color:var(--ink);border-left-color:var(--amber);padding:16px 20px}
-  .stat.clock .label{color:#9AA4B0}
-  .clock-main{font:700 34px 'Space Grotesk',sans-serif;color:#fff;margin:4px 0 10px;letter-spacing:-.01em}
-  .clock-main small{font:500 13px 'IBM Plex Mono',monospace;color:#9AA4B0;margin-left:10px;letter-spacing:0}
-  .clock-split{display:flex;flex-wrap:wrap;gap:6px 26px;font:12px 'IBM Plex Mono',monospace;color:#9AA4B0}
-  .clock-split b{display:block;color:#F3EFE3;font-size:15px;font-weight:600;margin-top:2px}
-  .stat.ot{border-left-color:var(--amber)}
-  .stat.pay{background:var(--teal);border-color:var(--teal-dark);border-left-color:var(--amber)}
-  .stat.pay .label{color:#CFE3E0}
-  .tag.night{background:#DDE3F0;color:#37466B}
-  tfoot td{font-weight:600;border-top:2px solid var(--ink-soft);border-bottom:0}
 </style>
 </head>
 <body>
@@ -164,7 +148,6 @@
         <p class="brand-eyebrow">Panel główny</p>
         <h1>Ewidencja godzin</h1>
         <p class="subtitle">Wybierz siebie z listy albo dodaj nową osobę.</p>
-        <span class="ver">wersja 2.2</span>
       </div>
     </header>
 
@@ -227,7 +210,6 @@
         <input type="checkbox" id="eHoliday">
         <label for="eHoliday" style="margin:0;text-transform:none;font-weight:400;">To dzień wolny / niedziela / święto (wyższa stawka)</label>
       </div>
-      <div class="preview" id="entryPreview"></div>
     </div>
 
     <div class="card">
@@ -247,7 +229,6 @@
       <h2><span class="n">§4</span> Podsumowanie miesiąca</h2>
       <div class="summary-grid" id="summaryGrid"></div>
       <div class="month-bar" id="monthBar"></div>
-      <div id="summaryBreak" style="overflow-x:auto;"></div>
       <p class="note" id="summaryNote"></p>
       <div class="lock-overlay" id="summaryLock">
         <div class="lock-emoji">🔒</div>
@@ -275,7 +256,6 @@
         <p class="brand-eyebrow">Panel administratora</p>
         <h1 id="adminTitle">Administrator</h1>
         <p class="subtitle">Podsumowanie godzin i wypłat wszystkich użytkowników.</p>
-        <span class="ver">wersja 2.2</span>
       </div>
     </header>
 
@@ -774,23 +754,24 @@ function toggleContractFields(){
 }
 
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
-const wd = d => new Date(d+'T12:00:00').toLocaleDateString('pl-PL',{weekday:'short'});
-const hm  = m => `${Math.floor(m/60)} h ${pad(m%60)} min`;
-const dec = m => (m/60).toFixed(2).replace('.',',');
-const zl  = c => (c/100).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
+function computeWorkedHours(from,to,breakMin){
+  let start = timeToMinutes(from), end = timeToMinutes(to);
+  if(end <= start) end += 24*60;
+  return Math.max(0, (end - start - (breakMin||0)) / 60);
+}
 function computeEntry(entry, settings){
-  let st = timeToMinutes(entry.from), en = timeToMinutes(entry.to);
-  if(en <= st) en += 1440;                                   // zmiana nocna
-  const wMin = Math.max(0, en - st - (entry.brk||0));
-  let reg = wMin, ot = 0, hol = 0;
-  if(entry.holiday){ reg = 0; hol = wMin; }
-  else if(settings.contractType === 'etat'){ reg = Math.min(wMin, Math.round(settings.threshold*60)); ot = wMin - reg; }
+  const worked = computeWorkedHours(entry.from, entry.to, entry.brk);
+  let regular = worked, overtime = 0;
+  if(settings.contractType === 'etat' && !entry.holiday){
+    regular = Math.min(worked, settings.threshold);
+    overtime = Math.max(0, worked - settings.threshold);
+  } else if(entry.holiday){
+    regular = 0; overtime = worked;
+  }
   const rate = settings.rate || 0;
-  const c = (m,x)=> Math.round(m*rate*x/60*100);            // grosze
-  const cr = c(reg,1), co = c(ot,settings.otMult||1.5), ch = c(hol,settings.holMult||2);
-  const cents = cr+co+ch;
-  return { night: timeToMinutes(entry.to) <= timeToMinutes(entry.from), wMin, regMin:reg, otMin:ot, holMin:hol, cr, co, ch, cents,
-           worked:wMin/60, regular:reg/60, overtime:(ot+hol)/60, pay:cents/100 };
+  const otRateMult = entry.holiday ? settings.holMult : settings.otMult;
+  const pay = regular*rate + overtime*rate*otRateMult;
+  return { worked, regular, overtime, pay };
 }
 function addOneDay(dateStr){
   let [y,m,d] = dateStr.split('-').map(Number);
@@ -849,58 +830,49 @@ function renderEntryTable(){
   const wrap = $('tableWrap');
   if(rows.length===0){ wrap.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu.</div>'; return; }
   const maxHours = Math.max(...rows.map(r=>computeEntry(r,user.settings).worked), 10);
-  let html = `<table><thead><tr><th>Data</th><th>Godziny</th><th>Przerwa</th><th>Rozkład</th><th>Czas pracy</th><th>Kwota</th><th></th></tr></thead><tbody>`;
-  let TW=0, TC=0;
+  let html = `<table><thead><tr><th>Data</th><th>Godziny</th><th>Przerwa</th><th>Rozkład</th><th>Suma h</th><th>Kwota</th><th></th></tr></thead><tbody>`;
   rows.forEach(e=>{
-    const c = computeEntry(e, user.settings); TW+=c.wMin; TC+=c.cents;
+    const c = computeEntry(e, user.settings);
     const regW = (c.regular/maxHours*100).toFixed(1), otW = (c.overtime/maxHours*100).toFixed(1);
     html += `<tr>
-      <td class="mono">${wd(e.date)} ${e.date}${c.night?' <span class="tag night">nocna</span>':''}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
+      <td class="mono">${e.date}${e.holiday?' <span class="tag holiday">wolne/święto</span>':''}${e.note?`<br><span style="color:var(--muted);font-size:11.5px;">${escapeHtml(e.note)}</span>`:''}</td>
       <td class="mono">${e.from}–${e.to}</td>
       <td class="mono">${e.brk} min</td>
       <td><div class="hourbar"><div class="seg reg" style="left:0;width:${regW}%;"></div><div class="seg ot" style="left:${regW}%;width:${otW}%;"></div></div></td>
-      <td class="mono">${hm(c.wMin)}<span class="sub">${dec(c.wMin)} h</span>${(c.otMin+c.holMin)>0?`<span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${hm(c.otMin+c.holMin)} nadg.</span>`:''}</td>
-      <td class="mono">${zl(c.cents)}</td>
+      <td class="mono">${c.worked.toFixed(2)} h${c.overtime>0?`<br><span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${c.overtime.toFixed(2)} nadg.</span>`:''}</td>
+      <td class="mono">${c.pay.toFixed(2)} zł</td>
       <td><button class="btn-danger" onclick="deleteEntry(${e.id})">Usuń</button></td>
     </tr>`;
   });
-  html += `</tbody><tfoot><tr><td>Razem w widoku</td><td></td><td></td><td></td><td class="mono">${hm(TW)}<span class="sub">${dec(TW)} h</span></td><td class="mono">${zl(TC)}</td><td></td></tr></tfoot></table>`;
+  html += '</tbody></table>';
   wrap.innerHTML = html;
 }
 
 function renderSummary(){
   const user = getUser(currentUserId);
   const lockEl = $('summaryLock');
-  if(!summaryUnlocked){ lockEl.style.display='flex'; $('summaryGrid').innerHTML=''; $('monthBar').innerHTML=''; $('summaryBreak').innerHTML=''; $('summaryNote').textContent=''; return; }
+  if(!summaryUnlocked){ lockEl.style.display='flex'; $('summaryGrid').innerHTML=''; $('monthBar').innerHTML=''; $('summaryNote').textContent=''; return; }
   lockEl.style.display='none';
-  const S = user.settings;
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
-  const t = {w:0,reg:0,ot:0,hol:0,cents:0};
-  rows.forEach(e=>{ const c=computeEntry(e,S); t.w+=c.wMin; t.reg+=c.regMin; t.ot+=c.otMin; t.hol+=c.holMin; t.cents+=c.cents; });
-  const days = new Set(rows.map(r=>r.date)).size, avg = days ? Math.round(t.w/days) : 0, extra = t.ot+t.hol;
-  const tile = (cls,label,val)=>`<div class="stat ${cls}"><div class="label">${label}</div><div class="value">${val}</div></div>`;
-  $('summaryGrid').innerHTML =
-    `<div class="stat clock">
-       <div class="label">Czas pracy w godzinach i minutach</div>
-       <div class="clock-main">${hm(t.w)}<small>= ${dec(t.w)} h</small></div>
-       <div class="clock-split">
-         <span>standardowe<b>${hm(t.reg)}</b></span>
-         <span>nadgodziny / święta<b>${hm(extra)}</b></span>
-         <span>średnio dziennie<b>${hm(avg)}</b></span>
-         <span>łącznie minut<b>${t.w}</b></span>
-       </div>
-     </div>` +
-    tile('','Dni przepracowane',days) +
-    tile('','Godziny łącznie',dec(t.w)+' h') +
-    tile('','Godziny standardowe',dec(t.reg)+' h') +
-    tile('ot','Nadgodziny',dec(extra)+' h') +
-    tile('','Śr. dzienna',dec(avg)+' h') +
-    tile('pay','Wypłata brutto',zl(t.cents));
-  const rs = t.w ? t.reg/t.w*100 : 0, os = t.w ? extra/t.w*100 : 0;
-  $('monthBar').innerHTML = t.w ? `<div class="seg" style="width:${rs}%;background:var(--teal);">${rs>12?'standard':''}</div><div class="seg" style="width:${os}%;background:var(--amber);">${os>10?'nadg.':''}</div>` : '';
-  $('summaryBreak').innerHTML = '';
-  $('summaryNote').textContent = S.contractType==='etat'
-    ? `Umowa o pracę · próg dobowy ${S.threshold} h · nadgodziny ×${S.otMult}, dni wolne/święta ×${S.holMult}.`
+  let totalWorked=0, totalRegular=0, totalOvertime=0, totalPay=0;
+  rows.forEach(e=>{ const c = computeEntry(e,user.settings); totalWorked+=c.worked; totalRegular+=c.regular; totalOvertime+=c.overtime; totalPay+=c.pay; });
+  const days = new Set(rows.map(r=>r.date)).size;
+  const avg = days ? (totalWorked/days) : 0;
+  const totMin = Math.round(totalWorked*60);
+  const totHM = Math.floor(totMin/60) + ' h ' + pad(totMin%60) + ' min';
+  $('summaryGrid').innerHTML = `
+    <div class="stat"><div class="label">Dni przepracowane</div><div class="value">${days}</div></div>
+    <div class="stat"><div class="label">Godziny łącznie</div><div class="value">${totalWorked.toFixed(2)} h</div></div>
+    <div class="stat"><div class="label">Czas (godz. i min)</div><div class="value" style="font-size:18px;">${totHM}</div></div>
+    <div class="stat"><div class="label">Godziny standardowe</div><div class="value">${totalRegular.toFixed(2)} h</div></div>
+    <div class="stat ot"><div class="label">Nadgodziny</div><div class="value">${totalOvertime.toFixed(2)} h</div></div>
+    <div class="stat"><div class="label">Śr. dzienna</div><div class="value">${avg.toFixed(2)} h</div></div>
+    <div class="stat pay"><div class="label">Wypłata brutto</div><div class="value">${totalPay.toFixed(2)} zł</div></div>
+  `;
+  const regShare = totalWorked ? (totalRegular/totalWorked*100) : 0, otShare = totalWorked ? (totalOvertime/totalWorked*100) : 0;
+  $('monthBar').innerHTML = totalWorked ? `<div class="seg" style="width:${regShare}%;background:var(--teal);">${regShare>12?'standard':''}</div><div class="seg" style="width:${otShare}%;background:var(--amber);">${otShare>10?'nadg.':''}</div>` : '';
+  $('summaryNote').textContent = user.settings.contractType==='etat'
+    ? `Umowa o pracę · próg dobowy ${user.settings.threshold} h · nadgodziny ×${user.settings.otMult}, dni wolne/święta ×${user.settings.holMult}.`
     : `Zlecenie / dzieło / B2B · brak naliczania nadgodzin, liczona jest suma godzin × stawka.`;
 }
 
@@ -913,10 +885,10 @@ function renderTimesheet(preferLatest){
 function toCSV(){
   const user = getUser(currentUserId);
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
-  let csv = '\uFEFFData;Od;Do;Przerwa (min);Czas (h min);Minuty;Godziny dziesietne;Standardowe (min);Nadgodziny (min);Kwota (zl);Wolne/Swieto;Notatka\n';
+  let csv = 'Data;Od;Do;Przerwa (min);Godziny;Standardowe;Nadgodziny;Kwota;Wolne/Swieto;Notatka\n';
   rows.forEach(e=>{
     const c = computeEntry(e, user.settings);
-    csv += [e.date,e.from,e.to,e.brk,hm(c.wMin),c.wMin,dec(c.wMin),c.regMin,c.otMin+c.holMin,(c.cents/100).toFixed(2).replace('.',','),e.holiday?'tak':'nie',(e.note||'').replace(/;/g,',')].join(';') + '\n';
+    csv += [e.date,e.from,e.to,e.brk,c.worked.toFixed(2),c.regular.toFixed(2),c.overtime.toFixed(2),c.pay.toFixed(2),e.holiday?'tak':'nie',(e.note||'').replace(/;/g,',')].join(';') + '\n';
   });
   return csv;
 }
@@ -1000,25 +972,23 @@ function renderAdminScreen(preferLatest){
   populateAdminMonthFilter(!!preferLatest);
   const wrap = $('adminTableWrap');
   if(appData.users.length===0){ wrap.innerHTML = '<div class="empty">Brak użytkowników w systemie.</div>'; return; }
-  const T = {d:0,w:0,ex:0,cents:0};
-  let html = `<table><thead><tr><th>Użytkownik</th><th>Dni</th><th>Czas pracy</th><th>Nadgodziny / święta</th><th>Wypłata</th><th></th><th></th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>Użytkownik</th><th>Dni</th><th>Godziny</th><th>Nadgodziny</th><th>Wypłata</th><th></th><th></th></tr></thead><tbody>`;
   appData.users.forEach(u=>{
     const rows = u.entries.filter(e=> !currentAdminMonth || monthKey(e.date)===currentAdminMonth);
-    let w=0, ex=0, cents=0;
-    rows.forEach(e=>{ const c = computeEntry(e,u.settings); w+=c.wMin; ex+=c.otMin+c.holMin; cents+=c.cents; });
+    let worked=0, ot=0, pay=0;
+    rows.forEach(e=>{ const c = computeEntry(e,u.settings); worked+=c.worked; ot+=c.overtime; pay+=c.pay; });
     const days = new Set(rows.map(r=>r.date)).size;
-    T.d+=days; T.w+=w; T.ex+=ex; T.cents+=cents;
     html += `<tr>
       <td class="mono">${escapeHtml(u.name)}</td>
       <td class="mono">${days}</td>
-      <td class="mono">${hm(w)}<span class="sub">${dec(w)} h</span></td>
-      <td class="mono">${hm(ex)}<span class="sub">${dec(ex)} h</span></td>
-      <td class="mono">${zl(cents)}</td>
+      <td class="mono">${worked.toFixed(2)} h</td>
+      <td class="mono">${ot.toFixed(2)} h</td>
+      <td class="mono">${pay.toFixed(2)} zł</td>
       <td><button class="btn-ghost" onclick="selectUserFromAdmin(${u.id})">Szczegóły</button></td>
       <td><button class="btn-ghost" onclick="openAdminResetUserPin(${u.id})">Reset PIN</button></td>
     </tr>`;
   });
-  html += `</tbody><tfoot><tr><td>Razem</td><td class="mono">${T.d}</td><td class="mono">${hm(T.w)}<span class="sub">${dec(T.w)} h</span></td><td class="mono">${hm(T.ex)}</td><td class="mono">${zl(T.cents)}</td><td></td><td></td></tr></tfoot></table>`;
+  html += '</tbody></table>';
   wrap.innerHTML = html;
 }
 function openAdminResetUserPin(userId){
@@ -1050,16 +1020,6 @@ function confirmAdminResetUserPin(userId){
   closeModal();
   alert(`Nowy PIN dla ${user.name} został ustawiony.`);
 }
-
-/* ---------- podgląd czasu przy dodawaniu wpisu ---------- */
-function updateEntryPreview(){
-  const f=$('eFrom').value, t=$('eTo').value;
-  if(!f||!t){ $('entryPreview').textContent=''; return; }
-  const a=timeToMinutes(f); let b=timeToMinutes(t); if(b<=a) b+=1440;
-  const m=Math.max(0,b-a-(parseInt($('eBreak').value)||0));
-  $('entryPreview').textContent=`Ten wpis: ${hm(m)}  (${m} min = ${dec(m)} h)`+(timeToMinutes(t)<=a?' · zmiana nocna':'');
-}
-['eFrom','eTo','eBreak'].forEach(i=>$(i).addEventListener('input',updateEntryPreview));
 
 /* ---------- init ---------- */
 $('adminBackBtn').addEventListener('click', backToStart);
