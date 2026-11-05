@@ -130,12 +130,17 @@
     .grid.entry{grid-template-columns:1fr 1fr;}
     .grid.entry > *:last-child{grid-column:span 2;}
   }
-  .sub{display:inline-block;margin:5px 0 0;padding:2px 9px;border-radius:999px;background:#DCEBE8;color:var(--teal-dark);font:500 12px 'IBM Plex Mono',monospace}
-  td .sub{margin:3px 0 0 8px}
+  .sub{display:inline;margin:0 0 0 8px;color:var(--muted);font:12px 'IBM Plex Mono',monospace}
   .ver{display:inline-block;margin-top:10px;font:11px 'IBM Plex Mono',monospace;color:var(--amber);border:1px solid #5a4b25;border-radius:4px;padding:2px 7px}
   .preview{font:500 13px 'IBM Plex Mono',monospace;color:var(--teal-dark);background:#E3EEEC;border-radius:7px;padding:8px 12px;margin-top:12px}
   .preview:empty{display:none}
   .stat{border-left:4px solid var(--teal)}
+  .stat.clock{grid-column:1/-1;background:var(--ink);border-color:var(--ink);border-left-color:var(--amber);padding:16px 20px}
+  .stat.clock .label{color:#9AA4B0}
+  .clock-main{font:700 34px 'Space Grotesk',sans-serif;color:#fff;margin:4px 0 10px;letter-spacing:-.01em}
+  .clock-main small{font:500 13px 'IBM Plex Mono',monospace;color:#9AA4B0;margin-left:10px;letter-spacing:0}
+  .clock-split{display:flex;flex-wrap:wrap;gap:6px 26px;font:12px 'IBM Plex Mono',monospace;color:#9AA4B0}
+  .clock-split b{display:block;color:#F3EFE3;font-size:15px;font-weight:600;margin-top:2px}
   .stat.ot{border-left-color:var(--amber)}
   .stat.pay{background:var(--teal);border-color:var(--teal-dark);border-left-color:var(--amber)}
   .stat.pay .label{color:#CFE3E0}
@@ -159,7 +164,7 @@
         <p class="brand-eyebrow">Panel główny</p>
         <h1>Ewidencja godzin</h1>
         <p class="subtitle">Wybierz siebie z listy albo dodaj nową osobę.</p>
-        <span class="ver">wersja 2.1 · godziny w h/min + dziesiętne</span>
+        <span class="ver">wersja 2.2</span>
       </div>
     </header>
 
@@ -270,7 +275,7 @@
         <p class="brand-eyebrow">Panel administratora</p>
         <h1 id="adminTitle">Administrator</h1>
         <p class="subtitle">Podsumowanie godzin i wypłat wszystkich użytkowników.</p>
-        <span class="ver">wersja 2.1</span>
+        <span class="ver">wersja 2.2</span>
       </div>
     </header>
 
@@ -854,12 +859,12 @@ function renderEntryTable(){
       <td class="mono">${e.from}–${e.to}</td>
       <td class="mono">${e.brk} min</td>
       <td><div class="hourbar"><div class="seg reg" style="left:0;width:${regW}%;"></div><div class="seg ot" style="left:${regW}%;width:${otW}%;"></div></div></td>
-      <td class="mono">${hm(c.wMin)}<span class="sub">${c.wMin} min = ${dec(c.wMin)} h</span>${(c.otMin+c.holMin)>0?`<span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${hm(c.otMin+c.holMin)} nadg.</span>`:''}</td>
+      <td class="mono">${hm(c.wMin)}<span class="sub">${dec(c.wMin)} h</span>${(c.otMin+c.holMin)>0?`<span class="tag" style="color:var(--amber-dark);background:#F4E3D0;">+${hm(c.otMin+c.holMin)} nadg.</span>`:''}</td>
       <td class="mono">${zl(c.cents)}</td>
       <td><button class="btn-danger" onclick="deleteEntry(${e.id})">Usuń</button></td>
     </tr>`;
   });
-  html += `</tbody><tfoot><tr><td>Razem w widoku</td><td></td><td></td><td></td><td class="mono">${hm(TW)}<span class="sub">${TW} min ÷ 60 = ${dec(TW)} h</span></td><td class="mono">${zl(TC)}</td><td></td></tr></tfoot></table>`;
+  html += `</tbody><tfoot><tr><td>Razem w widoku</td><td></td><td></td><td></td><td class="mono">${hm(TW)}<span class="sub">${dec(TW)} h</span></td><td class="mono">${zl(TC)}</td><td></td></tr></tfoot></table>`;
   wrap.innerHTML = html;
 }
 
@@ -870,25 +875,30 @@ function renderSummary(){
   lockEl.style.display='none';
   const S = user.settings;
   const rows = user.entries.filter(e=> !currentTsMonth || monthKey(e.date)===currentTsMonth);
-  const t = {w:0,reg:0,ot:0,hol:0,cr:0,co:0,ch:0,cents:0};
-  rows.forEach(e=>{ const c=computeEntry(e,S); t.w+=c.wMin; t.reg+=c.regMin; t.ot+=c.otMin; t.hol+=c.holMin; t.cr+=c.cr; t.co+=c.co; t.ch+=c.ch; t.cents+=c.cents; });
+  const t = {w:0,reg:0,ot:0,hol:0,cents:0};
+  rows.forEach(e=>{ const c=computeEntry(e,S); t.w+=c.wMin; t.reg+=c.regMin; t.ot+=c.otMin; t.hol+=c.holMin; t.cents+=c.cents; });
   const days = new Set(rows.map(r=>r.date)).size, avg = days ? Math.round(t.w/days) : 0, extra = t.ot+t.hol;
-  const dm = m => `${m} min = ${dec(m)} h`;
-  const st = (cls,label,main,sub)=>`<div class="stat ${cls}"><div class="label">${label}</div><div class="value">${main}</div>${sub?`<span class="sub">${sub}</span>`:''}</div>`;
+  const tile = (cls,label,val)=>`<div class="stat ${cls}"><div class="label">${label}</div><div class="value">${val}</div></div>`;
   $('summaryGrid').innerHTML =
-    st('','Dni przepracowane',days,'') +
-    st('','Czas łącznie',hm(t.w),`${t.w} min ÷ 60 = ${dec(t.w)} h`) +
-    st('','Godziny standardowe',hm(t.reg),dm(t.reg)) +
-    st('ot','Nadgodziny / święta',hm(extra),dm(extra)) +
-    st('','Śr. dzienna',hm(avg),dm(avg)) +
-    st('pay','Wypłata brutto',zl(t.cents),'');
+    `<div class="stat clock">
+       <div class="label">Czas pracy w godzinach i minutach</div>
+       <div class="clock-main">${hm(t.w)}<small>= ${dec(t.w)} h</small></div>
+       <div class="clock-split">
+         <span>standardowe<b>${hm(t.reg)}</b></span>
+         <span>nadgodziny / święta<b>${hm(extra)}</b></span>
+         <span>średnio dziennie<b>${hm(avg)}</b></span>
+         <span>łącznie minut<b>${t.w}</b></span>
+       </div>
+     </div>` +
+    tile('','Dni przepracowane',days) +
+    tile('','Godziny łącznie',dec(t.w)+' h') +
+    tile('','Godziny standardowe',dec(t.reg)+' h') +
+    tile('ot','Nadgodziny',dec(extra)+' h') +
+    tile('','Śr. dzienna',dec(avg)+' h') +
+    tile('pay','Wypłata brutto',zl(t.cents));
   const rs = t.w ? t.reg/t.w*100 : 0, os = t.w ? extra/t.w*100 : 0;
   $('monthBar').innerHTML = t.w ? `<div class="seg" style="width:${rs}%;background:var(--teal);">${rs>12?'standard':''}</div><div class="seg" style="width:${os}%;background:var(--amber);">${os>10?'nadg.':''}</div>` : '';
-  const r = S.rate||0, fm = x=>String(x).replace('.',',');
-  const line = (n,m,x,c)=> m ? `<tr><td>${n}</td><td class="mono">${hm(m)}</td><td class="mono">${m}</td><td class="mono">${dec(m)}</td><td class="mono">${fm(r)} × ${fm(x)}</td><td class="mono">${zl(c)}</td></tr>` : '';
-  $('summaryBreak').innerHTML = t.w ? `<table style="min-width:540px;margin-top:6px;"><thead><tr><th>Składnik</th><th>Czas (h min)</th><th>Minuty</th><th>Godz. dz.</th><th>Stawka zł/h × mnożnik</th><th>Kwota</th></tr></thead><tbody>`
-    + line('Godziny podstawowe',t.reg,1,t.cr) + line('Nadgodziny',t.ot,S.otMult||1.5,t.co) + line('Niedziela / święto',t.hol,S.holMult||2,t.ch)
-    + `</tbody><tfoot><tr><td>Razem</td><td class="mono">${hm(t.w)}</td><td class="mono">${t.w}</td><td class="mono">${dec(t.w)}</td><td></td><td class="mono">${zl(t.cents)}</td></tr></tfoot></table>` : '';
+  $('summaryBreak').innerHTML = '';
   $('summaryNote').textContent = S.contractType==='etat'
     ? `Umowa o pracę · próg dobowy ${S.threshold} h · nadgodziny ×${S.otMult}, dni wolne/święta ×${S.holMult}.`
     : `Zlecenie / dzieło / B2B · brak naliczania nadgodzin, liczona jest suma godzin × stawka.`;
@@ -1001,14 +1011,14 @@ function renderAdminScreen(preferLatest){
     html += `<tr>
       <td class="mono">${escapeHtml(u.name)}</td>
       <td class="mono">${days}</td>
-      <td class="mono">${hm(w)}<span class="sub">${w} min = ${dec(w)} h</span></td>
-      <td class="mono">${hm(ex)}<span class="sub">${ex} min = ${dec(ex)} h</span></td>
+      <td class="mono">${hm(w)}<span class="sub">${dec(w)} h</span></td>
+      <td class="mono">${hm(ex)}<span class="sub">${dec(ex)} h</span></td>
       <td class="mono">${zl(cents)}</td>
       <td><button class="btn-ghost" onclick="selectUserFromAdmin(${u.id})">Szczegóły</button></td>
       <td><button class="btn-ghost" onclick="openAdminResetUserPin(${u.id})">Reset PIN</button></td>
     </tr>`;
   });
-  html += `</tbody><tfoot><tr><td>Razem</td><td class="mono">${T.d}</td><td class="mono">${hm(T.w)}<span class="sub">${T.w} min = ${dec(T.w)} h</span></td><td class="mono">${hm(T.ex)}</td><td class="mono">${zl(T.cents)}</td><td></td><td></td></tr></tfoot></table>`;
+  html += `</tbody><tfoot><tr><td>Razem</td><td class="mono">${T.d}</td><td class="mono">${hm(T.w)}<span class="sub">${dec(T.w)} h</span></td><td class="mono">${hm(T.ex)}</td><td class="mono">${zl(T.cents)}</td><td></td><td></td></tr></tfoot></table>`;
   wrap.innerHTML = html;
 }
 function openAdminResetUserPin(userId){
