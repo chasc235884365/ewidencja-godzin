@@ -4,169 +4,221 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ewidencja godzin pracy</title>
-<meta name="theme-color" content="#F4F5F6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111418" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D141B" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 :root{
   color-scheme:light dark;
-  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  --bg:#F4F5F6;--surface:#FFFFFF;--field:#FFFFFF;--line:#DADFE4;--ink:#161B22;--muted:#5C6672;
-  --accent:#0F6B6B;--accent-ink:#FFFFFF;--accent-soft:#E3F0EF;
-  --warn:#8A5A00;--warn-soft:#FBF0D9;--danger:#B3261E;--danger-soft:#F7DEDC;
-  --radius:10px;
+  --bg:#F2F3EF;--surface:#FFFFFF;--surface2:#F6F7F4;--ink:#141C26;--ink-soft:#3A4655;--muted:#69737F;--line:#E2E4DE;
+  --teal:#0F766E;--teal-dark:#0B5A54;--teal-soft:#DDF0EC;--on-teal:#FFFFFF;
+  --amber:#D4952A;--amber-dark:#8A5F0F;--amber-soft:#FBEED3;
+  --red:#C0443B;--red-soft:#F6D9D6;--blue:#3B4F86;--blue-soft:#E3E8F5;
+  --hero1:#14403F;--hero2:#0B2A2E;
+  --radius:18px;--shadow:0 1px 2px rgba(20,28,38,.05),0 10px 28px rgba(20,28,38,.07);
+  --paper:var(--surface);--paper-dim:var(--surface2);
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#111418;--surface:#1A1F26;--field:#12161B;--line:#2C343E;--ink:#ECEFF2;--muted:#9AA5B1;
-  --accent:#3DB5A8;--accent-ink:#06211E;--accent-soft:#17353A;
-  --warn:#F0C26A;--warn-soft:#352A12;--danger:#F2877F;--danger-soft:#3B1F1D;
+  --bg:#0D141B;--surface:#16202A;--surface2:#1B2733;--ink:#EDF1F4;--ink-soft:#C3CCD5;--muted:#8D99A6;--line:#27343F;
+  --teal:#2DB3A6;--teal-dark:#6FD6CB;--teal-soft:#15353A;--on-teal:#04211F;
+  --amber:#E0A840;--amber-dark:#F0C878;--amber-soft:#3A2F17;
+  --red:#E46A60;--red-soft:#3C1F1D;--blue:#A3B7EE;--blue-soft:#1F2A44;
+  --hero1:#14403F;--hero2:#0A242A;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
 }}
 *{box-sizing:border-box}
-[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--font)}
-.wrap{max-width:920px;margin:0 auto;padding:20px 16px 64px}
-h1{font-size:clamp(24px,5vw,30px);line-height:1.2;font-weight:650;margin:0}
-h2{font-size:17px;font-weight:600;margin:0 0 14px}
-.lead{margin:6px 0 0;color:var(--muted)}
-.page-head{margin-bottom:20px}
-.center{text-align:center}.muted,.sub{color:var(--muted)}
-.sub{font-size:13px}
-.num{font-variant-numeric:tabular-nums}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:960px;margin:0 auto;padding:26px 16px 70px}
+.mono{font-family:'IBM Plex Mono',monospace}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-.card-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
-.card-head h2{margin:0}
-.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.note{font-size:13px;color:var(--muted);margin:12px 0 0}
-.empty{margin:0;padding:20px 0;text-align:center;color:var(--muted)}
+/* nagłówek */
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+h1{font:700 clamp(27px,5.5vw,36px)/1.1 'Space Grotesk',sans-serif;margin:0;letter-spacing:-.02em}
+.subtitle{color:var(--muted);font-size:14.5px;margin:8px 0 0;max-width:520px}
+
+/* karty */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow);animation:rise .4s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.card,.modal-box{animation:none}}
+.card h2{font:600 17px 'Space Grotesk',sans-serif;margin:0 0 16px;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.note{font-size:12.5px;color:var(--muted);margin:12px 0 0;line-height:1.55}
+.empty{color:var(--muted);font-size:13.5px;padding:24px 12px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.footer-note{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 
 /* formularze */
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
-.span-all{grid-column:1/-1}
-label{display:block;font-size:14px;font-weight:500;margin-bottom:6px}
+.grid{display:grid;gap:14px}
+.grid.settings{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.grid.entry{grid-template-columns:1.2fr .9fr .9fr .9fr 1.6fr auto;align-items:end}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:500}
 input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],select{
-  width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
-  background:var(--field);color:var(--ink);font:inherit;font-size:16px}
-input:focus-visible,select:focus-visible,button:focus-visible,dialog:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.check{display:flex;align-items:center;gap:12px;min-height:48px;margin:0;font-weight:400}
-.check input{width:24px;height:24px;margin:0;accent-color:var(--accent);flex:none}
-.preview{margin:12px 0 0;font-size:14px;color:var(--accent)}
+  width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);
+  font:16px 'IBM Plex Mono',monospace;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.checkbox-row{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13.5px;color:var(--ink-soft)}
+.checkbox-row input{width:18px;height:18px;accent-color:var(--teal);margin:0}
+.checkbox-row label{margin:0}
+.preview{margin-top:14px;padding:10px 14px;border-radius:12px;background:var(--teal-soft);color:var(--teal-dark);font:500 13px 'IBM Plex Mono',monospace}
 .preview:empty{display:none}
-.form-error{margin:12px 0 0;color:var(--danger);font-size:14px}
 
 /* przyciski */
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border:1px solid var(--line);
-  border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
-.btn:hover{background:var(--bg)}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn-primary:hover{background:var(--accent);filter:brightness(1.1)}
-.btn-danger{color:var(--danger);border-color:var(--danger-soft)}
-.btn-danger:hover{background:var(--danger-soft)}
-.btn-sm{min-height:44px;padding:0 14px;font-size:15px}
-.btn-link{border:0;background:none;color:var(--accent);min-height:44px;padding:0;text-decoration:underline;font-weight:500}
+button{font:600 14px 'Space Grotesk',sans-serif;border:0;border-radius:12px;height:44px;padding:0 20px;cursor:pointer;transition:transform .1s,background .15s,box-shadow .15s,border-color .15s}
+button:active{transform:scale(.97)}
+.btn-primary{background:var(--teal);color:var(--on-teal);box-shadow:0 4px 12px rgba(15,118,110,.25)}
+.btn-primary:hover{filter:brightness(1.08)}
 .btn-block{width:100%}
-.btn[disabled]{opacity:.5;cursor:not-allowed}
-.btn-row{display:flex;gap:12px;flex-wrap:wrap}
-.btn-row .btn{flex:1 1 200px}
-.back{margin-bottom:16px}
+.btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--muted)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red-soft);height:34px;padding:0 13px;font-size:12.5px}
+.btn-danger:hover{background:var(--red);border-color:var(--red);color:#fff}
+.back-btn{background:var(--surface);color:var(--ink-soft);border:1px solid var(--line);height:38px;padding:0 16px;margin-bottom:16px;font-size:13px}
+.back-btn:hover{border-color:var(--teal)}
+.link-btn{background:none;border:none;color:var(--teal-dark);font:500 13px 'IBM Plex Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:6px 0;height:auto}
+.icon-btn{background:transparent;border:none;color:var(--muted);font-size:15px;padding:4px 8px;height:auto;cursor:pointer}
+.icon-btn:hover{color:var(--red)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.month-select{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.month-select label{margin:0}
+.month-select select{width:auto;min-width:160px}
 
-/* listy osób */
-.people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.people .empty{grid-column:1/-1}
-.person{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.person-main{flex:1;min-height:56px;padding:0 16px;border:0;background:none;color:inherit;font:inherit;font-weight:600;text-align:left;cursor:pointer}
-.person-main:hover{background:var(--bg)}
-.person-del{width:56px;border:0;border-left:1px solid var(--line);background:none;color:var(--muted);font-size:18px;cursor:pointer}
-.person-del:hover{color:var(--danger);background:var(--danger-soft)}
+/* ekran startowy */
+.start-actions{display:flex;gap:12px;flex-wrap:wrap}
+.start-actions button{flex:1;min-width:190px}
+.person-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.person-list .empty{grid-column:1/-1}
+.person-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+.person-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pname{display:flex;align-items:center;gap:12px;font:600 15.5px 'Space Grotesk',sans-serif}
+.avatar{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal-dark);font:700 17px 'Space Grotesk',sans-serif;flex:none}
+.avatar.admin{background:var(--amber-soft);color:var(--amber-dark)}
+.person-actions{display:flex;gap:6px;align-items:center}
+.lock-icon{font:12px 'IBM Plex Mono',monospace;color:var(--muted)}
 
-/* tabele (na telefonie zamieniają się w karty) */
-.table-wrap{overflow-x:auto}
-.rt{width:100%;border-collapse:collapse}
-.rt th{padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;color:var(--muted);text-align:left;white-space:nowrap}
-.rt td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-.rt .r{text-align:right}
-.rt tfoot td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600}
-.tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--warn-soft);color:var(--warn);font-size:12px;font-weight:500}
-.tag.night{background:var(--accent-soft);color:var(--accent)}
-.rt .sub{display:block}
+/* lista wpisów */
+.elist{display:flex;flex-direction:column;gap:8px}
+.erow{display:grid;grid-template-columns:62px 1fr auto auto auto;grid-template-areas:"date main dur pay del";gap:6px 18px;align-items:center;padding:12px 16px 12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);transition:border-color .12s}
+.erow:hover{border-color:var(--teal)}
+.e-date{grid-area:date;text-align:center;line-height:1.1}
+.e-date b{display:block;font:700 26px 'Space Grotesk',sans-serif}
+.e-date span{font:11px 'IBM Plex Mono',monospace;color:var(--muted)}
+.e-main{grid-area:main;min-width:0}
+.e-time{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font:600 14px 'IBM Plex Mono',monospace}
+.e-time .muted{font-weight:400;font-size:12.5px;color:var(--muted)}
+.e-note{font-size:12.5px;color:var(--muted);margin-top:4px}
+.e-dur{grid-area:dur;text-align:right}
+.e-dur b{display:block;font:600 15px 'IBM Plex Mono',monospace}
+.e-dur span{font:12.5px 'IBM Plex Mono',monospace;color:var(--muted)}
+.e-pay{grid-area:pay;min-width:100px;text-align:right;font:600 15px 'IBM Plex Mono',monospace;color:var(--teal-dark)}
+.e-del{grid-area:del}
+.erow.total{background:var(--teal-soft);border-color:transparent}
+.hourbar{position:relative;height:8px;margin-top:9px;border-radius:999px;background:var(--line);overflow:hidden;max-width:460px}
+.hourbar .seg{position:absolute;top:0;bottom:0}
+.seg.reg{background:var(--teal)}.seg.ot{background:var(--amber)}
+.tag{display:inline-block;font:500 11px 'IBM Plex Mono',monospace;padding:2px 9px;border-radius:999px;background:var(--amber-soft);color:var(--amber-dark)}
+.tag.night{background:var(--blue-soft);color:var(--blue)}
 @media (max-width:640px){
-  .rt thead{display:none}
-  .rt,.rt tbody,.rt tfoot,.rt tr{display:block}
-  .rt tr{border:1px solid var(--line);border-radius:8px;padding:6px 14px;margin-bottom:10px}
-  .rt tfoot tr{background:var(--accent-soft);border-color:transparent}
-  .rt td{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:8px 0;border:0;text-align:right}
-  .rt td::before{content:attr(data-label);color:var(--muted);font-size:14px;text-align:left;flex:none}
-  .rt td:empty{display:none}
-  .rt td.act{justify-content:flex-end;padding-top:4px}
-  .rt td.act::before{content:none}
-  .rt tfoot td{border:0}
-  .rt .sub{display:inline;margin-left:8px}
-  .card{padding:16px}
+  .erow{grid-template-columns:50px 1fr auto;grid-template-areas:"date main dur" "date pay del";gap:6px 12px}
+  .e-pay{text-align:left}
+  .grid.entry{grid-template-columns:1fr 1fr}.grid.entry>*:last-child{grid-column:span 2}
+  .card{padding:18px 16px}
 }
 
 /* podsumowanie */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-.kpi{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
-.kpi .label{font-size:14px;color:var(--muted)}
-.kpi .value{font-size:20px;font-weight:600;margin-top:2px}
-.kpi.primary{grid-column:span 2}
-.kpi.primary .value{font-size:30px;font-weight:650}
-.kpi.warn .value{color:var(--warn)}
-@media (max-width:420px){.kpi.primary{grid-column:1/-1}}
-.bar{display:flex;height:8px;margin:16px 0 0;border-radius:4px;overflow:hidden;background:var(--line)}
-.bar span{background:var(--accent)}.bar span.ot{background:var(--warn)}
-.locked{text-align:center;padding:18px 0}
-.locked p{margin:0 0 14px;color:var(--muted)}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.hero{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px 36px;padding:24px 28px;border-radius:18px;background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#F2F7F6}
+.hero .label{font-size:12.5px;color:#9FC9C4}
+.hero-time{font:700 clamp(34px,7vw,50px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.02em;margin:6px 0 4px}
+.hero-money{font:700 clamp(30px,6vw,42px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.02em;margin:6px 0 4px;color:#F6D58E}
+.hero-sub{font:13px 'IBM Plex Mono',monospace;color:#9FC9C4}
+.hero-pay{text-align:right}
+@media (max-width:520px){.hero-pay{text-align:left}}
+.stat{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--surface2)}
+.stat .label{font-size:12.5px;color:var(--muted)}
+.stat .value{font:600 21px 'IBM Plex Mono',monospace;margin-top:5px}
+.stat .dec{font:13px 'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+.stat.ot .value{color:var(--amber-dark)}
+.month-bar{display:flex;height:24px;border-radius:999px;overflow:hidden;margin:16px 0 4px;background:var(--line)}
+.month-bar .seg{display:flex;align-items:center;justify-content:center;font:500 10.5px 'IBM Plex Mono',monospace;color:#fff}
 
-/* okno modalne i komunikaty */
-dialog{width:calc(100% - 32px);max-width:440px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
-dialog::backdrop{background:rgba(10,14,18,.55)}
-.modal-body{padding:22px}
-.modal-body h3{margin:0 0 14px;font-size:18px}
+/* panel admina */
+.urow{display:grid;grid-template-columns:minmax(130px,1.3fr) repeat(3,minmax(100px,1fr)) minmax(100px,1fr) auto;gap:10px 16px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);margin-bottom:8px}
+.urow.total{background:var(--teal-soft);border-color:transparent}
+.u-name{font:600 15.5px 'Space Grotesk',sans-serif;display:flex;align-items:center;gap:10px}
+.u-l{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}
+.u-v{font:600 14.5px 'IBM Plex Mono',monospace}
+.u-d{font:12.5px 'IBM Plex Mono',monospace;color:var(--muted)}
+.u-pay{color:var(--teal-dark)}
+.u-actions{display:flex;gap:8px;flex-wrap:wrap}
+.u-actions button{height:36px;padding:0 14px;font-size:13px}
+@media (max-width:760px){.urow{grid-template-columns:1fr 1fr}.u-name,.u-actions{grid-column:1/-1}}
+
+/* blokada PIN */
+.locked-wrap{position:relative;min-height:230px}
+.lock-overlay{position:absolute;inset:0;background:color-mix(in srgb,var(--surface) 80%,transparent);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:var(--radius);text-align:center;padding:20px}
+.lock-overlay .lock-emoji{font-size:30px}
+.lock-overlay p{margin:0;font-size:14px;color:var(--ink-soft);max-width:280px}
+
+/* okno modalne (<dialog>) i komunikaty */
+dialog{width:calc(100% - 32px);max-width:420px;padding:0;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(8,12,18,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal-body{padding:26px;max-height:88vh;overflow-y:auto}
+.modal-body h3{font:600 19px 'Space Grotesk',sans-serif;margin:0 0 14px}
 .modal-body .field{margin-bottom:14px}
 .modal-body p{margin:0 0 14px}
 .modal-actions{display:flex;gap:10px;margin-top:18px}
-.modal-actions .btn{flex:1}
-.modal-body .btn-link{margin-top:10px}
-.pin{display:flex;gap:10px;justify-content:center}
-.pin input{width:56px;min-height:64px;padding:0;text-align:center;font-size:26px}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:8px;
-  background:var(--ink);color:var(--bg);font-size:15px;z-index:100}
+.modal-actions button{flex:1;height:48px;font-size:14px}
+.pin{display:flex;gap:10px;justify-content:center;margin:10px 0 4px}
+.pin input{width:56px;height:64px;text-align:center;font-size:26px;padding:0;border-radius:14px}
+.form-error{color:var(--red);font-size:13px;margin:8px 0 0}
+.form-error[hidden]{display:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:14.5px;z-index:100}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+button[disabled]{opacity:.5;cursor:not-allowed}
+.person-card{padding:0}
+.person-main{flex:1;display:flex;align-items:center;gap:12px;min-width:0;height:auto;padding:12px 14px;background:none;border:0;border-radius:14px;color:inherit;text-align:left;cursor:pointer}
+.person-actions{padding-right:6px}
+.icon-btn{min-width:44px;min-height:44px}
+.modal-actions .btn-danger{height:48px;padding:0 18px;font-size:14px}
+.erow .btn-danger{min-height:44px}
+.e-pay:empty{display:none}
 </style>
 </head>
 <body>
-<main class="wrap">
+<div class="wrap">
 
-  <section id="screen-loading"><p class="center muted" id="loadingText">Ładowanie…</p></section>
+  <section id="screen-loading"><p class="center" style="text-align:center;color:var(--muted)" id="loadingText">Ładowanie…</p></section>
 
   <!-- Ekran startowy -->
   <section id="screen-start" hidden>
-    <header class="page-head">
-      <h1>Ewidencja godzin</h1>
-      <p class="lead">Wybierz osobę z listy albo dodaj nową.</p>
+    <header>
+      <div>
+        <h1>Ewidencja godzin</h1>
+        <p class="subtitle">Wybierz siebie z listy albo dodaj nową osobę.</p>
+      </div>
     </header>
     <div class="card">
       <h2>Dodaj</h2>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="addAdminBtn" data-action="add-person" data-type="admin">Dodaj administratora</button>
-        <button class="btn btn-primary" data-action="add-person" data-type="user">Dodaj użytkownika</button>
+      <div class="start-actions">
+        <button class="btn-primary" id="addAdminBtn" data-action="add-person" data-type="admin">+ Dodaj administratora</button>
+        <button class="btn-primary" data-action="add-person" data-type="user">+ Dodaj użytkownika</button>
       </div>
     </div>
-    <div class="card"><h2>Administratorzy</h2><ul class="people" id="adminList"></ul></div>
-    <div class="card"><h2>Użytkownicy</h2><ul class="people" id="userList"></ul></div>
+    <div class="card"><h2>Administratorzy</h2><div class="person-list" id="adminList"></div></div>
+    <div class="card"><h2>Użytkownicy</h2><div class="person-list" id="userList"></div></div>
   </section>
 
   <!-- Karta czasu pracy -->
   <section id="screen-timesheet" hidden>
-    <button class="btn btn-sm back" id="tsBack">← Wróć do listy</button>
-    <header class="page-head"><h1 id="tsTitle"></h1></header>
+    <button class="back-btn" id="tsBack">← Wróć do listy</button>
+    <header><div><h1 id="tsTitle"></h1><p class="subtitle">Wpisuj zmiany, licz nadgodziny i wypłatę automatycznie.</p></div></header>
 
     <form class="card" id="settingsForm">
       <h2>Ustawienia umowy</h2>
-      <div class="fields">
+      <div class="grid settings">
         <div><label for="contractType">Typ umowy</label>
           <select id="contractType"><option value="etat">Umowa o pracę (etat)</option><option value="inne">Zlecenie / dzieło / B2B</option></select></div>
         <div><label for="rate">Stawka (zł/h)</label><input type="number" id="rate" inputmode="decimal" step="0.01" min="0"></div>
@@ -174,43 +226,51 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
         <div data-etat><label for="otMult">Mnożnik nadgodzin</label><input type="number" id="otMult" inputmode="decimal" step="0.05" min="1"></div>
         <div><label for="holMult">Mnożnik niedziela/święto</label><input type="number" id="holMult" inputmode="decimal" step="0.05" min="1"></div>
       </div>
-      <p class="note">Nadgodziny liczone są uproszczonym progiem dobowym i mają charakter orientacyjny.</p>
+      <p class="note">Wyliczenia nadgodzin są uproszczone (próg dobowy) i mają charakter orientacyjny — nie zastępują przepisów Kodeksu pracy ani umowy.</p>
     </form>
 
     <form class="card" id="entryForm">
       <h2>Dodaj wpis</h2>
-      <div class="fields">
+      <div class="grid entry">
         <div><label for="eDate">Data</label><input type="date" id="eDate" required></div>
         <div><label for="eFrom">Od</label><input type="time" id="eFrom" required></div>
         <div><label for="eTo">Do</label><input type="time" id="eTo" required></div>
         <div><label for="eBreak">Przerwa (min)</label><input type="number" id="eBreak" inputmode="numeric" min="0" step="5" value="0"></div>
-        <div class="span-all"><label for="eNote">Notatka</label><input type="text" id="eNote" placeholder="opcjonalnie"></div>
-        <label class="check span-all"><input type="checkbox" id="eHoliday"> Dzień wolny, niedziela lub święto (wyższa stawka)</label>
+        <div><label for="eNote">Notatka</label><input type="text" id="eNote" placeholder="opcjonalnie"></div>
+        <div><button class="btn-primary" type="submit" style="width:100%">Dodaj wpis</button></div>
       </div>
-      <p class="preview num" id="entryPreview"></p>
-      <button class="btn btn-primary btn-block" type="submit" style="margin-top:16px">Dodaj wpis</button>
+      <div class="checkbox-row"><input type="checkbox" id="eHoliday"><label for="eHoliday">To dzień wolny / niedziela / święto (wyższa stawka)</label></div>
+      <div class="preview" id="entryPreview"></div>
     </form>
 
     <div class="card">
-      <div class="card-head">
-        <h2>Wpisy</h2>
-        <div class="toolbar">
-          <label class="sr-only" for="monthSelect">Miesiąc</label>
-          <select id="monthSelect" style="width:auto;min-width:170px"></select>
-          <button class="btn btn-sm" id="csvBtn" type="button">Eksport CSV</button>
+      <div class="toolbar">
+        <h2 style="margin:0">Wpisy</h2>
+        <div class="month-select">
+          <label for="monthSelect">Miesiąc</label>
+          <select id="monthSelect"></select>
+          <button class="btn-ghost" id="csvBtn" type="button">Eksport CSV</button>
         </div>
       </div>
       <div id="entriesBox"></div>
     </div>
 
-    <div class="card"><h2>Podsumowanie miesiąca</h2><div id="summaryBox"></div></div>
+    <div class="card locked-wrap">
+      <h2>Podsumowanie miesiąca</h2>
+      <div id="summaryBox"></div>
+      <div class="lock-overlay" id="summaryLock" hidden>
+        <div class="lock-emoji">🔒</div>
+        <p>Podsumowanie i wypłata są chronione PIN-em.</p>
+        <button class="btn-primary" data-action="unlock">Wpisz PIN</button>
+      </div>
+    </div>
 
     <div class="card">
       <h2>Kopia zapasowa</h2>
-      <p class="note" style="margin:0 0 14px">Kopia wpisów i ustawień tego użytkownika (plik .json).</p>
-      <div class="btn-row">
-        <button class="btn" id="backupExportBtn" type="button">Pobierz kopię</button>
-        <button class="btn" id="backupImportBtn" type="button">Wczytaj kopię</button>
+      <p class="note" style="margin-top:0">Kopia wpisów i ustawień tego użytkownika (plik .json). Wczytanie kopii zastępuje obecne wpisy.</p>
+      <div class="start-actions" style="margin-top:12px">
+        <button class="btn-ghost" id="backupExportBtn" type="button">Pobierz kopię (.json)</button>
+        <button class="btn-ghost" id="backupImportBtn" type="button">Wczytaj kopię (.json)</button>
         <input type="file" id="backupFile" accept="application/json" hidden>
       </div>
     </div>
@@ -218,24 +278,18 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 
   <!-- Panel administratora -->
   <section id="screen-admin" hidden>
-    <button class="btn btn-sm back" id="adminBack">← Wróć do listy</button>
-    <header class="page-head">
-      <h1 id="adminTitle"></h1>
-      <p class="lead">Godziny i wypłaty wszystkich użytkowników.</p>
-    </header>
+    <button class="back-btn" id="adminBack">← Wróć do listy</button>
+    <header><div><h1 id="adminTitle"></h1><p class="subtitle">Podsumowanie godzin i wypłat wszystkich użytkowników.</p></div></header>
     <div class="card">
-      <div class="card-head">
-        <h2>Wszyscy użytkownicy</h2>
-        <div class="toolbar">
-          <label class="sr-only" for="adminMonth">Miesiąc</label>
-          <select id="adminMonth" style="width:auto;min-width:170px"></select>
-        </div>
+      <div class="toolbar">
+        <h2 style="margin:0">Wszyscy użytkownicy</h2>
+        <div class="month-select"><label for="adminMonth">Miesiąc</label><select id="adminMonth"></select></div>
       </div>
       <div id="adminBox"></div>
     </div>
   </section>
 
-</main>
+</div>
 
 <dialog id="modal"></dialog>
 <div id="toast" role="status" hidden></div>
@@ -392,7 +446,7 @@ function openModal(title, bodyHtml, buttons) {
   actions.className = 'modal-actions';
   for (const b of buttons) {
     const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'btn ' + (b.cls || ''); btn.textContent = b.text;
+    btn.type = 'button'; btn.className = b.cls || 'btn-ghost'; btn.textContent = b.text;
     btn.addEventListener('click', () => b.onClick());
     actions.append(btn);
   }
@@ -457,7 +511,7 @@ function openAddPerson(type) {
 }
 
 function requestPin(person, onSuccess, title = `PIN – ${person.name}`) {
-  openModal(title, pinFields('Wpisz PIN') + '<button type="button" class="btn-link" id="forgotLink">Zapomniałem PIN</button>', [
+  openModal(title, pinFields('Wpisz PIN') + '<button type="button" class="link-btn" id="forgotLink">Zapomniałem PIN</button>', [
     { text: 'Anuluj', onClick: closeModal },
     { text: 'Zatwierdź', cls: 'btn-primary', onClick: async () => {
       if (await verifySecret(person, 'pin', readPin())) { closeModal(); onSuccess(); }
@@ -595,15 +649,18 @@ function refreshScreen() {
 }
 
 /* ============ Widoki ============ */
+const MON = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
 function renderStart() {
   const hasAdmin = state.admins.length >= 1, btn = $('addAdminBtn');
   btn.disabled = hasAdmin;
-  btn.textContent = hasAdmin ? 'Administrator już istnieje' : 'Dodaj administratora';
-  const row = (type, p) => `<li class="person">
-    <button class="person-main" data-action="${type === 'admin' ? 'open-admin' : 'open-user'}" data-id="${esc(p.id)}">${esc(p.name)}</button>
-    <button class="person-del" data-action="${type === 'admin' ? 'delete-admin' : 'delete-user'}" data-id="${esc(p.id)}" aria-label="Usuń: ${esc(p.name)}">✕</button></li>`;
-  $('adminList').innerHTML = state.admins.length ? state.admins.map(p => row('admin', p)).join('') : '<li class="empty">Brak administratorów.</li>';
-  $('userList').innerHTML = state.users.length ? state.users.map(p => row('user', p)).join('') : '<li class="empty">Brak użytkowników.</li>';
+  btn.textContent = hasAdmin ? 'Administrator już istnieje' : '+ Dodaj administratora';
+  const card = (type, p) => `<div class="person-card">
+    <button class="person-main" data-action="${type === 'admin' ? 'open-admin' : 'open-user'}" data-id="${esc(p.id)}">
+      <span class="avatar ${type === 'admin' ? 'admin' : ''}">${esc((p.name || '?').charAt(0).toUpperCase())}</span><span class="pname">${esc(p.name)}</span></button>
+    <span class="person-actions">${type === 'admin' ? '<span class="lock-icon">PIN</span>' : ''}
+      <button class="icon-btn" data-action="${type === 'admin' ? 'delete-admin' : 'delete-user'}" data-id="${esc(p.id)}" aria-label="Usuń: ${esc(p.name)}">✕</button></span></div>`;
+  $('adminList').innerHTML = state.admins.length ? state.admins.map(p => card('admin', p)).join('') : '<div class="empty">Brak administratorów.</div>';
+  $('userList').innerHTML = state.users.length ? state.users.map(p => card('user', p)).join('') : '<div class="empty">Brak użytkowników.</div>';
 }
 
 function renderTimesheet() {
@@ -614,75 +671,71 @@ function renderTimesheet() {
 
 function renderEntries(user) {
   const s = settingsOf(user), rows = state.entries, pay = state.unlocked, box = $('entriesBox');
-  if (!rows.length) { box.innerHTML = '<p class="empty">Brak wpisów w tym miesiącu.</p>'; return; }
-  const t = totals(rows, s);
-  const body = rows.map(e => {
-    const c = computeEntry(e, s), [, mm, dd] = e.date.split('-');
-    const tags = (c.night ? '<span class="tag night">nocna</span>' : '') + (e.holiday ? '<span class="tag">wolne/święto</span>' : '')
-               + (c.ot > 0 ? `<span class="tag">+${hm(c.ot)} nadg.</span>` : '');
-    return `<tr>
-      <td data-label="Data">${weekday(e.date)} ${dd}.${mm}</td>
-      <td data-label="Godziny"><span class="num">${esc(e.from)}–${esc(e.to)}</span>${tags}${e.note ? `<span class="sub">${esc(e.note)}</span>` : ''}</td>
-      <td data-label="Przerwa" class="num">${e.brk || 0} min</td>
-      <td data-label="Czas pracy"><span class="num">${hm(c.w)}</span><span class="sub num">${dec(c.w)} h</span></td>
-      ${pay ? `<td data-label="Kwota" class="num r">${zl(c.cents)}</td>` : ''}
-      <td class="act"><button class="btn btn-danger btn-sm" data-action="delete-entry" data-id="${esc(e.id)}" aria-label="Usuń wpis z ${esc(e.date)}">Usuń</button></td></tr>`;
+  if (!rows.length) { box.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu. Dodaj pierwszą zmianę powyżej.</div>'; return; }
+  const calcs = rows.map(e => computeEntry(e, s)), t = totals(rows, s);
+  const maxMin = Math.max(...calcs.map(c => c.w), 600);
+  const plural = n => n === 1 ? 'wpis' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'wpisy' : 'wpisów';
+  const rowsHtml = rows.map((e, i) => {
+    const c = calcs[i], reg = (c.reg / maxMin * 100).toFixed(1), extra = ((c.ot + c.hol) / maxMin * 100).toFixed(1);
+    return `<div class="erow">
+      <div class="e-date"><b>${esc(e.date.slice(8, 10))}</b><span>${weekday(e.date)} · ${MON[+e.date.slice(5, 7) - 1]}</span></div>
+      <div class="e-main">
+        <div class="e-time">${esc(e.from)}–${esc(e.to)}<span class="muted">przerwa ${e.brk || 0} min</span>${c.night ? '<span class="tag night">nocna</span>' : ''}${e.holiday ? '<span class="tag">wolne/święto</span>' : ''}${c.ot > 0 ? `<span class="tag">+${hm(c.ot)} nadg.</span>` : ''}</div>
+        <div class="hourbar"><div class="seg reg" style="left:0;width:${reg}%"></div><div class="seg ot" style="left:${reg}%;width:${extra}%"></div></div>
+        ${e.note ? `<div class="e-note">${esc(e.note)}</div>` : ''}
+      </div>
+      <div class="e-dur"><b class="num">${hm(c.w)}</b><span class="num">${dec(c.w)} h</span></div>
+      <div class="e-pay num">${pay ? zl(c.cents) : ''}</div>
+      <button class="btn-danger e-del" data-action="delete-entry" data-id="${esc(e.id)}" aria-label="Usuń wpis z ${esc(e.date)}">Usuń</button>
+    </div>`;
   }).join('');
-  box.innerHTML = `<div class="table-wrap"><table class="rt">
-    <thead><tr><th>Data</th><th>Godziny</th><th>Przerwa</th><th>Czas pracy</th>${pay ? '<th class="r">Kwota</th>' : ''}<th><span class="sr-only">Akcje</span></th></tr></thead>
-    <tbody>${body}</tbody>
-    <tfoot><tr><td>Razem</td><td></td><td></td>
-      <td data-label="Czas pracy"><span class="num">${hm(t.w)}</span><span class="sub num">${dec(t.w)} h</span></td>
-      ${pay ? `<td data-label="Kwota" class="num r">${zl(t.cents)}</td>` : ''}<td></td></tr></tfoot></table></div>`;
+  box.innerHTML = `<div class="elist">${rowsHtml}
+    <div class="erow total"><div class="e-date"><b>Σ</b><span>razem</span></div>
+      <div class="e-main"><div class="e-time">${rows.length} ${plural(rows.length)} w tym miesiącu</div></div>
+      <div class="e-dur"><b class="num">${hm(t.w)}</b><span class="num">${dec(t.w)} h</span></div>
+      <div class="e-pay num">${pay ? zl(t.cents) : ''}</div><span></span></div></div>`;
 }
 
 function renderSummary(user) {
   const box = $('summaryBox');
-  if (!state.unlocked) {
-    box.innerHTML = '<div class="locked"><p>Podsumowanie i wypłata są chronione PIN-em.</p><button class="btn btn-primary" data-action="unlock">Wpisz PIN</button></div>';
-    return;
-  }
+  $('summaryLock').hidden = state.unlocked;
+  if (!state.unlocked) { box.innerHTML = ''; return; }
   const s = settingsOf(user), t = totals(state.entries, s);
-  if (!t.w) { box.innerHTML = '<p class="empty">Brak wpisów w tym miesiącu.</p>'; return; }
+  if (!t.w) { box.innerHTML = '<div class="empty">Brak wpisów w tym miesiącu.</div>'; return; }
   const avg = Math.round(t.w / t.days);
-  const kpi = (cls, label, min) => `<div class="kpi ${cls}"><div class="label">${label}</div><div class="value num">${hm(min)}</div><div class="sub num">${dec(min)} h</div></div>`;
+  const tile = (cls, label, min) => `<div class="stat ${cls}"><div class="label">${label}</div><div class="value">${hm(min)}</div><div class="dec">${dec(min)} h</div></div>`;
   const regPct = t.reg / t.w * 100, extraPct = t.extra / t.w * 100;
-  box.innerHTML = `<div class="kpis">
-      <div class="kpi primary"><div class="label">Czas pracy łącznie</div><div class="value num">${hm(t.w)}</div><div class="sub num">${dec(t.w)} h · ${t.w} min</div></div>
-      <div class="kpi primary"><div class="label">Wypłata brutto</div><div class="value num">${zl(t.cents)}</div><div class="sub num">stawka ${num(s.rate)} zł/h</div></div>
-      ${kpi('', 'Godziny standardowe', t.reg)}${kpi('warn', 'Nadgodziny i święta', t.extra)}${kpi('', 'Średnio dziennie', avg)}
-      <div class="kpi"><div class="label">Dni z wpisem</div><div class="value num">${t.days}</div></div>
+  box.innerHTML = `<div class="summary-grid">
+      <div class="hero">
+        <div><div class="label">Czas pracy łącznie</div><div class="hero-time">${hm(t.w)}</div><div class="hero-sub">${dec(t.w)} h · ${t.w} min</div></div>
+        <div class="hero-pay"><div class="label">Wypłata brutto</div><div class="hero-money">${zl(t.cents)}</div><div class="hero-sub">stawka ${num(s.rate)} zł/h</div></div>
+      </div>
+      <div class="stat"><div class="label">Dni z wpisem</div><div class="value">${t.days}</div></div>
+      ${tile('', 'Godziny standardowe', t.reg)}${tile('ot', 'Nadgodziny / święta', t.extra)}${tile('', 'Średnio dziennie', avg)}
     </div>
-    <div class="bar" role="img" aria-label="Godziny standardowe ${Math.round(regPct)}%, nadgodziny ${Math.round(extraPct)}%"><span style="width:${regPct}%"></span><span class="ot" style="width:${extraPct}%"></span></div>
+    <div class="month-bar" role="img" aria-label="Godziny standardowe ${Math.round(regPct)}%, nadgodziny ${Math.round(extraPct)}%">
+      <div class="seg" style="width:${regPct}%;background:var(--teal)">${regPct > 12 ? 'standard' : ''}</div>
+      <div class="seg" style="width:${extraPct}%;background:var(--amber)">${extraPct > 10 ? 'nadg.' : ''}</div></div>
     <p class="note">${s.contractType === 'etat'
-      ? `Umowa o pracę · próg dobowy ${num(s.threshold)} h · nadgodziny ×${num(s.otMult)}, dni wolne i święta ×${num(s.holMult)}.`
-      : `Zlecenie / dzieło / B2B · bez nadgodzin, liczona jest suma godzin × stawka. Dni wolne i święta ×${num(s.holMult)}.`}</p>`;
+      ? `Umowa o pracę · próg dobowy ${num(s.threshold)} h · nadgodziny ×${num(s.otMult)}, dni wolne/święta ×${num(s.holMult)}.`
+      : `Zlecenie / dzieło / B2B · brak naliczania nadgodzin, liczona jest suma godzin × stawka.`}</p>`;
 }
 
 function renderAdmin() {
   if (state.screen !== 'admin') return;
   const box = $('adminBox');
-  if (!state.users.length) { box.innerHTML = '<p class="empty">Brak użytkowników w systemie.</p>'; return; }
+  if (!state.users.length) { box.innerHTML = '<div class="empty">Brak użytkowników w systemie.</div>'; return; }
   const all = { w: 0, extra: 0, cents: 0, days: 0 };
+  const cell = (label, main, sub, cls) => `<div><span class="u-l">${label}</span><div class="u-v num ${cls || ''}">${main}</div>${sub ? `<div class="u-d num">${sub}</div>` : ''}</div>`;
   const rows = state.users.map(u => {
     const t = totals(state.adminEntries[u.id] || [], settingsOf(u));
     all.w += t.w; all.extra += t.extra; all.cents += t.cents; all.days += t.days;
-    return `<tr>
-      <td data-label="Pracownik"><strong>${esc(u.name)}</strong></td>
-      <td data-label="Dni" class="num">${t.days}</td>
-      <td data-label="Czas pracy"><span class="num">${hm(t.w)}</span><span class="sub num">${dec(t.w)} h</span></td>
-      <td data-label="Nadgodziny i święta"><span class="num">${hm(t.extra)}</span><span class="sub num">${dec(t.extra)} h</span></td>
-      <td data-label="Wypłata" class="num r">${zl(t.cents)}</td>
-      <td class="act"><button class="btn btn-sm" data-action="details" data-id="${esc(u.id)}">Szczegóły</button>
-        <button class="btn btn-sm" data-action="reset-pin" data-id="${esc(u.id)}">Reset PIN</button></td></tr>`;
+    return `<div class="urow">
+      <div class="u-name"><span class="avatar">${esc((u.name || '?').charAt(0).toUpperCase())}</span>${esc(u.name)}</div>
+      ${cell('Dni', t.days)}${cell('Czas pracy', hm(t.w), dec(t.w) + ' h')}${cell('Nadgodziny / święta', hm(t.extra), dec(t.extra) + ' h')}${cell('Wypłata', zl(t.cents), '', 'u-pay')}
+      <div class="u-actions"><button class="btn-ghost" data-action="details" data-id="${esc(u.id)}">Szczegóły</button><button class="btn-ghost" data-action="reset-pin" data-id="${esc(u.id)}">Reset PIN</button></div></div>`;
   }).join('');
-  box.innerHTML = `<div class="table-wrap"><table class="rt">
-    <thead><tr><th>Pracownik</th><th>Dni</th><th>Czas pracy</th><th>Nadgodziny i święta</th><th class="r">Wypłata</th><th><span class="sr-only">Akcje</span></th></tr></thead>
-    <tbody>${rows}</tbody>
-    <tfoot><tr><td>Razem</td><td class="num" data-label="Dni">${all.days}</td>
-      <td data-label="Czas pracy"><span class="num">${hm(all.w)}</span><span class="sub num">${dec(all.w)} h</span></td>
-      <td data-label="Nadgodziny i święta"><span class="num">${hm(all.extra)}</span><span class="sub num">${dec(all.extra)} h</span></td>
-      <td data-label="Do wypłaty" class="num r">${zl(all.cents)}</td><td></td></tr></tfoot></table></div>`;
+  box.innerHTML = rows + `<div class="urow total"><div class="u-name">Razem</div>${cell('Dni', all.days)}${cell('Czas pracy', hm(all.w), dec(all.w) + ' h')}${cell('Nadgodziny / święta', hm(all.extra), dec(all.extra) + ' h')}${cell('Do wypłaty', zl(all.cents), '', 'u-pay')}<div></div></div>`;
 }
 
 /* ============ Formularze karty czasu pracy ============ */
